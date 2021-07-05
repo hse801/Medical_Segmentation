@@ -63,7 +63,7 @@ class Trainer:
             loss_dice, per_ch_score = self.criterion(output, target)
             loss_dice.backward()
             self.optimizer.step()
-            self.lr_scheduler.step()
+            # self.lr_scheduler.step()
 
             self.writer.update_scores(batch_idx, loss_dice.item(), per_ch_score, 'train',
                                       epoch * self.len_epoch + batch_idx)

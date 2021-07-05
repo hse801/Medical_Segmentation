@@ -24,9 +24,10 @@ class Thyroid_dataset(Dataset):
             img_ct_path = self.ct_path[idx]
             img_ct = sitk.ReadImage(img_ct_path)
             depth = img_ct.GetDepth()
-            print(f'ct path for training = {img_ct_path}')
+            # print(f'ct path for training = {img_ct_path}')
             # print(f'ct path = {img_ct_path}')
             img_ct_data = sitk.GetArrayFromImage(img_ct)
+            img_ct_data = (img_ct_data - np.mean(img_ct_data)) / (np.std(img_ct_data) + 1e-8)
             # img_ct_data = img_ct_data.reshape(1, -1, 128, 128)
             # img_ct_data[img_ct_data > 500] = 500
             # torch.FloatTensor(img_ct_data.copy()).unsqueeze(0)
@@ -36,7 +37,7 @@ class Thyroid_dataset(Dataset):
             img_mask_path = self.mask_path[idx]
             img_mask = sitk.ReadImage(img_mask_path)
             img_mask_data = sitk.GetArrayFromImage(img_mask)
-            print(f'mask path for training = {img_mask_path}')
+            # print(f'mask path for training = {img_mask_path}')
 
             # img_mask_data = img_mask_data.reshape(1, -1, 128, 128)
             # print(f'after ct shape = {img_ct_data.shape}')
@@ -54,17 +55,18 @@ class Thyroid_dataset(Dataset):
 
             img_ct_path = self.ct_path[idx]
             img_ct = sitk.ReadImage(img_ct_path)
-            print(f'ct path for validation = {img_ct_path}')
+            # print(f'ct path for validation = {img_ct_path}')
 
             img_ct_data = sitk.GetArrayFromImage(img_ct)
             # img_ct_data = img_ct_data.reshape(1, -1, 128, 160)
             # img_ct_data[img_ct_data > 500] = 500
             # img_ct_data = (img_ct_data - nums[0]) / (nums[1] + 1e-8)
+            img_ct_data = (img_ct_data - np.mean(img_ct_data)) / (np.std(img_ct_data) + 1e-8)
 
             img_mask_path = self.mask_path[idx]
             img_mask = sitk.ReadImage(img_mask_path)
             img_mask_data = sitk.GetArrayFromImage(img_mask)
-            print(f'mask path for validation = {img_mask_path}')
+            # print(f'mask path for validation = {img_mask_path}')
             # print(f'before  reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
             # img_mask_data = img_mask_data.reshape(1, -1, 128, 160)
             # print(f'after reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
@@ -79,7 +81,7 @@ class Thyroid_dataset(Dataset):
         # if self.augmentation:
         self.transform = augment3D.RandomChoice(
             transforms=[augment3D.GaussianNoise(mean=0, std=0.01), augment3D.RandomFlip(),
-                        augment3D.ElasticTransform()], p=0.5)
+                        augment3D.ElasticTransform(), augment3D.RandomShift(), augment3D.RandomRotation()], p=0.7)
         # img_ct_dataimg_ct_data
 
         return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
@@ -114,7 +116,7 @@ val_ds = Thyroid_dataset(ct_path[0:60], mask_path[0:60], test_flag=1)
 
 def generate_thyroid_dataset():
 
-    train_loader = DataLoader(train_ds, batch_size=2, num_workers=4)
-    val_loader = DataLoader(val_ds, batch_size=2, num_workers=4)
+    train_loader = DataLoader(train_ds, batch_size=1, num_workers=4)
+    val_loader = DataLoader(val_ds, batch_size=1, num_workers=4)
 
     return train_loader, val_loader

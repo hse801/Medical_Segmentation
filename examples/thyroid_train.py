@@ -33,7 +33,7 @@ def main():
     if args.cuda:
         model = model.cuda()
         # print(model)
-        torchsummary.summary(model, (1, 128, 128, 128))
+        # torchsummary.summary(model, (1, 128, 128, 128))
         # net = torchvision.model()
         # print(net)
 
@@ -65,7 +65,7 @@ def get_arguments():
                         help='Tensor normalization: options ,max_min,',
                         choices=('max_min', 'full_volume_mean', 'brats', 'max', 'mean'))
     parser.add_argument('--split', default=0.8, type=float, help='Select percentage of training data(default: 0.8)')
-    parser.add_argument('--lr', default=1e-3, type=float,
+    parser.add_argument('--lr', default=1e-2, type=float,
                         help='learning rate (default: 1e-3)')
     parser.add_argument('--loadData', default=False)
     parser.add_argument('--cuda', action='store_true', default=True)
