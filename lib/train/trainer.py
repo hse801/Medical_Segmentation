@@ -10,7 +10,7 @@ class Trainer:
     Trainer class
     """
 
-    def __init__(self, args, model, criterion, optimizer, scheduler, train_data_loader,
+    def __init__(self, args, model, criterion, optimizer, train_data_loader,
                  valid_data_loader=None):
 
         self.args = args
@@ -22,7 +22,7 @@ class Trainer:
         self.len_epoch = len(self.train_data_loader)
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
-        self.lr_scheduler = scheduler
+        # self.lr_scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lambda epoch: 0.95 ** epoch)
         self.log_step = int(np.sqrt(train_data_loader.batch_size))
         self.writer = TensorboardWriter(args)
 
@@ -52,7 +52,7 @@ class Trainer:
 
     def train_epoch(self, epoch):
         self.model.train()
-
+        print('Training start---------------------------------------------------')
         for batch_idx, input_tuple in enumerate(self.train_data_loader):
 
             self.optimizer.zero_grad()

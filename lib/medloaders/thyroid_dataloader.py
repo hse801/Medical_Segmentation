@@ -112,11 +112,13 @@ mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/Mask_rsmpl.nii.gz')
 
 train_ds = Thyroid_dataset(ct_path[60:368], mask_path[60:368], test_flag=0)
 val_ds = Thyroid_dataset(ct_path[0:60], mask_path[0:60], test_flag=1)
+pred_ds = Thyroid_dataset(ct_path[0:368], mask_path[0:368], test_flag=1)
 
 
 def generate_thyroid_dataset():
 
     train_loader = DataLoader(train_ds, batch_size=1, num_workers=4)
     val_loader = DataLoader(val_ds, batch_size=1, num_workers=4)
+    pred_loader = DataLoader(pred_ds, batch_size=1, num_workers=0)
 
-    return train_loader, val_loader
+    return train_loader, val_loader, pred_loader

@@ -40,19 +40,19 @@ def create_model(args):
         model = TRANSBTS(_conv_repr=True, _pe_type="learned")
     elif model_name == 'DENSENET1':
         model = SinglePathDenseNet(in_channels=in_channels, classes=num_classes)
-    elif model_name == 'DENSENET2':
+    elif model_name == 'DENSENET2': # CHANNEL 2 OR 3
         model = DualPathDenseNet(in_channels=in_channels, classes=num_classes)
-    elif model_name == 'DENSENET3':
+    elif model_name == 'DENSENET3': # CHANNEL 2 OR 3
         model = DualSingleDenseNet(in_channels=in_channels, drop_rate=0.1, classes=num_classes)
     elif model_name == "UNET2D":
         model = Unet(in_channels, num_classes)
     elif model_name == "RESNET3DVAE":
         model = ResNet3dVAE(in_channels=in_channels, classes=num_classes, dim=args.dim)
     elif model_name == "SKIPDENSENET3D":
-        model = SkipDenseNet3D(growth_rate=8, num_init_features=16, drop_rate=0.1, classes=num_classes)
-    elif model_name == "COVIDNET1":
+        model = SkipDenseNet3D(growth_rate=4, num_init_features=8, drop_rate=0.1, classes=num_classes)
+    elif model_name == "COVIDNET1": # 2D
         model = CovidNet('small', num_classes)
-    elif model_name == "COVIDNET2":
+    elif model_name == "COVIDNET2": # 2D
         model = CovidNet('large', num_classes)
     elif model_name == "CNN":
         model = CNN(num_classes, 'resnet18')
@@ -75,15 +75,15 @@ def create_model(args):
         sum([p.data.nelement() for p in model.parameters()])))
 
     if optimizer_name == 'sgd':
-        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.5, weight_decay=weight_decay)
+        optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay) # 0.5 before
     elif optimizer_name == 'adam':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     elif optimizer_name == 'rmsprop':
         optimizer = optim.RMSprop(model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    if lr_scheduler_name == 'lambdalr':
-        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 0.85 ** epoch)
-    elif lr_scheduler_name == 'steplr':
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
+    # if lr_scheduler_name == 'lambdalr':
+    #     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda epoch: 0.85 ** epoch)
+    # elif lr_scheduler_name == 'steplr':
+    #     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
 
-    return model, optimizer, scheduler
+    return model, optimizer

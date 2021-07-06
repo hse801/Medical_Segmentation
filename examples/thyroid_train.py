@@ -24,10 +24,10 @@ def main():
     utils.reproducibility(args, seed)
     utils.make_dirs(args.save)
 
-    train_generator, val_generator = medical_loaders.thyroid_dataloader.generate_thyroid_dataset()
+    train_generator, val_generator, _ = medical_loaders.thyroid_dataloader.generate_thyroid_dataset()
     # training_generator, val_generator, full_volume, affine = medical_loaders.generate_datasets(args,
     #                                                                                            path='.././datasets')
-    model, optimizer, scheduler = medzoo.create_model(args)
+    model, optimizer = medzoo.create_model(args)
     criterion = DiceLoss(classes=args.classes)
 
     if args.cuda:
@@ -38,7 +38,7 @@ def main():
         # print(net)
 
     start_time = time.time()
-    trainer = train.Trainer(args, model, criterion, optimizer, scheduler, train_data_loader=train_generator,
+    trainer = train.Trainer(args, model, criterion, optimizer, train_data_loader=train_generator,
                             valid_data_loader=val_generator)
     trainer.training()
 
@@ -65,7 +65,7 @@ def get_arguments():
                         help='Tensor normalization: options ,max_min,',
                         choices=('max_min', 'full_volume_mean', 'brats', 'max', 'mean'))
     parser.add_argument('--split', default=0.8, type=float, help='Select percentage of training data(default: 0.8)')
-    parser.add_argument('--lr', default=1e-2, type=float,
+    parser.add_argument('--lr', default=1e-3, type=float,
                         help='learning rate (default: 1e-3)')
     parser.add_argument('--loadData', default=False)
     parser.add_argument('--cuda', action='store_true', default=True)
@@ -74,7 +74,7 @@ def get_arguments():
     parser.add_argument('--model', type=str, default='UNET3D',
                         choices=('VNET', 'VNET2', 'UNET3D', 'DENSENET1', 'DENSENET2', 'DENSENET3', 'HYPERDENSENET',
                                  'SKIPDENSENET3D', 'COVIDNET1', 'COVIDNET2', 'RESNETMED3D', 'HIGHRESNET',
-                                 'TRANSBTS'))
+                                 'TRANSBTS', 'RESNET3DVAE', 'DENSEVOXELNET'))
     parser.add_argument('--opt', type=str, default='sgd',
                         choices=('sgd', 'adam', 'rmsprop'))
     parser.add_argument('--lrscheduler', type=str, default='lambdalr',

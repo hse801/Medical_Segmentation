@@ -217,7 +217,7 @@ class UNet3D(BaseModel):
         seg_layer = out
         return seg_layer
 
-    def test(self,device='cpu'):
+    def test(self, device='cpu'):
 
         input_tensor = torch.rand(1, 2, 32, 32, 32)
         ideal_out = torch.rand(1, self.n_classes, 32, 32, 32)
