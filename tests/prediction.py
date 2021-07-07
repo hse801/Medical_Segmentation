@@ -71,7 +71,7 @@ def predictor(PATH, data_loader):
             print(f'{file_name} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'output type = {output.type()}, output size = {output.size()}')
-        # break
+        break
 
             # loss, per_ch_score = self.criterion(output, target)
 

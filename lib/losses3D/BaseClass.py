@@ -51,6 +51,7 @@ class _AbstractDiceLoss(nn.Module):
             target = self.skip_target_channels(target, self.skip_index_after)
             print("Target {} after skip index {}".format(before_size, target.size()))
 
+        print(f'input.size() = {input.size()}, target.size() = {target.size()}')
         assert input.size() == target.size(), "'input' and 'target' must have the same shape"
         # get probabilities from logits
         input = self.normalization(input)

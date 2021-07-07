@@ -33,7 +33,7 @@ def main():
     if args.cuda:
         model = model.cuda()
         # print(model)
-        # torchsummary.summary(model, (1, 128, 128, 128))
+        torchsummary.summary(model, (1, 64, 64, 64))
         # net = torchvision.model()
         # print(net)
 
@@ -51,9 +51,9 @@ def get_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('--batchSz', type=int, default=2)
     parser.add_argument('--dataset_name', type=str, default="thyroid")
-    parser.add_argument('--dim', nargs="+", type=int, default=(128, 128, 128))
+    parser.add_argument('--dim', nargs="+", type=int, default=(64, 64, 64))
     parser.add_argument('--nEpochs', type=int, default=100)
-    parser.add_argument('--classes', type=int, default=1)
+    parser.add_argument('--classes', type=int, default=2)
     parser.add_argument('--samples_train', type=int, default=100)
     parser.add_argument('--samples_val', type=int, default=100)
     parser.add_argument('--inChannels', type=int, default=1)
@@ -75,7 +75,7 @@ def get_arguments():
                         choices=('VNET', 'VNET2', 'UNET3D', 'DENSENET1', 'DENSENET2', 'DENSENET3', 'HYPERDENSENET',
                                  'SKIPDENSENET3D', 'COVIDNET1', 'COVIDNET2', 'RESNETMED3D', 'HIGHRESNET',
                                  'TRANSBTS', 'RESNET3DVAE', 'DENSEVOXELNET'))
-    parser.add_argument('--opt', type=str, default='sgd',
+    parser.add_argument('--opt', type=str, default='adam',
                         choices=('sgd', 'adam', 'rmsprop'))
     parser.add_argument('--lrscheduler', type=str, default='lambdalr',
                         choices=('lambdalr', 'steplr'))

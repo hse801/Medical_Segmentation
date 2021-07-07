@@ -49,7 +49,7 @@ def create_model(args):
     elif model_name == "RESNET3DVAE":
         model = ResNet3dVAE(in_channels=in_channels, classes=num_classes, dim=args.dim)
     elif model_name == "SKIPDENSENET3D":
-        model = SkipDenseNet3D(growth_rate=4, num_init_features=8, drop_rate=0.1, classes=num_classes)
+        model = SkipDenseNet3D(growth_rate=8, num_init_features=16, drop_rate=0.1, classes=num_classes)
     elif model_name == "COVIDNET1": # 2D
         model = CovidNet('small', num_classes)
     elif model_name == "COVIDNET2": # 2D

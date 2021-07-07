@@ -18,7 +18,7 @@ class UNet3D(BaseModel):
 
         self.lrelu = nn.LeakyReLU()
         self.dropout3d = nn.Dropout3d(p=0.6)
-        self.upsacle = nn.Upsample(scale_factor=2, mode='nearest')
+        self.upscale = nn.Upsample(scale_factor=2, mode='nearest')
         self.softmax = nn.Softmax(dim=1)
 
         self.conv3d_c1_1 = nn.Conv3d(self.in_channels, self.base_n_filter, kernel_size=3, stride=1, padding=1,
@@ -207,14 +207,15 @@ class UNet3D(BaseModel):
         out_pred = self.conv3d_l4(out)
 
         ds2_1x1_conv = self.ds2_1x1_conv3d(ds2)
-        ds1_ds2_sum_upscale = self.upsacle(ds2_1x1_conv)
+        ds1_ds2_sum_upscale = self.upscale(ds2_1x1_conv)
         ds3_1x1_conv = self.ds3_1x1_conv3d(ds3)
         ds1_ds2_sum_upscale_ds3_sum = ds1_ds2_sum_upscale + ds3_1x1_conv
-        ds1_ds2_sum_upscale_ds3_sum_upscale = self.upsacle(ds1_ds2_sum_upscale_ds3_sum)
+        ds1_ds2_sum_upscale_ds3_sum_upscale = self.upscale(ds1_ds2_sum_upscale_ds3_sum)
 
         out = out_pred + ds1_ds2_sum_upscale_ds3_sum_upscale
         # print(f'11 out type = {out.type()}, out size = {out.size()}')
         seg_layer = out
+        print(f'out shape = {seg_layer.shape}')
         return seg_layer
 
     def test(self, device='cpu'):
