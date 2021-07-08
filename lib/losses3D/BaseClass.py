@@ -2,7 +2,9 @@ import torch
 from torch import nn as nn
 
 from lib.losses3D.basic import expand_as_one_hot
-
+import os
+os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # Code was adapted and mofified from https://github.com/wolny/pytorch-3dunet/blob/master/pytorch3dunet/unet3d/losses.py
 
@@ -42,8 +44,11 @@ class _AbstractDiceLoss(nn.Module):
         """
         Expand to one hot added extra for consistency reasons
         """
+        # print(f'Baseclass.py: target size bf = {target.size()}')
         target = expand_as_one_hot(target.long(), self.classes)
+        # print(f'Baseclass.py: target size af = {target.size()}')
 
+        # print(f'Baseclass.py: input dim = {input.dim()}, target.dim = {target.dim()}')
         assert input.dim() == target.dim() == 5, "'input' and 'target' have different number of dims"
 
         if self.skip_index_after is not None:
@@ -51,7 +56,7 @@ class _AbstractDiceLoss(nn.Module):
             target = self.skip_target_channels(target, self.skip_index_after)
             print("Target {} after skip index {}".format(before_size, target.size()))
 
-        print(f'input.size() = {input.size()}, target.size() = {target.size()}')
+        # print(f'Baseclass.py: input.size() = {input.size()}, target.size() = {target.size()}')
         assert input.size() == target.size(), "'input' and 'target' must have the same shape"
         # get probabilities from logits
         input = self.normalization(input)

@@ -318,7 +318,7 @@ class DeBlock(nn.Module):
 
 def TRANSBTS(_conv_repr=True, _pe_type="learned"):
 
-    img_dim = 128
+    img_dim = 64
     num_classes = 1
     num_channels = 1
     patch_dim = 4

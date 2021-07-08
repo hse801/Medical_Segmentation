@@ -10,17 +10,25 @@ def expand_as_one_hot(input, C, ignore_index=None):
     :param ignore_index: ignore index to be kept during the expansion
     :return: 5D output image (NxCxDxHxW)
     """
+    # print('start expand_as_one_hot----------------------------------------------------------------------------------')
     if input.dim() == 5:
         return input
     assert input.dim() == 4
 
+    print(f'bf input.dim() = {input.dim()}, input.shape = {input.size()}')
     # expand the input tensor to Nx1xDxHxW before scattering
     input = input.unsqueeze(1)
+    print(f'af input.dim() = {input.dim()}, input.shape = {input.size()}')
     # create result tensor shape (NxCxDxHxW)
     shape = list(input.size())
+    print(f'basic.py: bf shape len = {len(shape)}, shape = {shape}')
     shape[1] = C
+    print(f'basic.py: af shape len = {len(shape)}, shape = {shape}')
+    # print(f'basic.py C = {C}')
+    print(f'afaf input.dim() = {input.dim()}, input.shape = {input.size()}')
 
     if ignore_index is not None:
+        print(f'basic.py: ignore_index is not None')
         # create ignore_index mask for the result
         mask = input.expand(shape) == ignore_index
         # clone the lib tensor and zero out ignore_index in the input
@@ -32,6 +40,12 @@ def expand_as_one_hot(input, C, ignore_index=None):
         result[mask] = ignore_index
         return result
     else:
+        # print(f'basic.py: ignore_index is None')
+        # print(f'torch.zeros(shape).to(input.device).scatter_(1, input, 1) = {torch.zeros(shape).to(input.device).scatter_(1, input, 1)}')
+        # print(f'shape = {shape}')
+        # print(f'bf basic.py: input size = {input.size()}')
+        # input = input.expand(shape)
+        # print(f'af basic.py: input size = {input.size()}')
         # scatter to get the one-hot tensor
         return torch.zeros(shape).to(input.device).scatter_(1, input, 1)
 
@@ -47,12 +61,14 @@ def compute_per_channel_dice(input, target, epsilon=1e-6, weight=None):
          epsilon (float): prevents division by zero
          weight (torch.Tensor): Cx1 tensor of weight per channel/class
     """
-
+    # print('start compute_per_channel_dice----------------------------------------------------')
     # input and target shapes must match
     assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
     input = flatten(input)
+    # print(f'basic.py: bf flatten target.size() = {target.size()}')
     target = flatten(target)
+    # print(f'basic.py: af flatten target.size() = {target.size()}')
     target = target.float()
 
     # compute per channel Dice Coefficient
@@ -62,6 +78,7 @@ def compute_per_channel_dice(input, target, epsilon=1e-6, weight=None):
 
     # here we can use standard dice (input + target).sum(-1) or extension (see V-Net) (input^2 + target^2).sum(-1)
     denominator = (input * input).sum(-1) + (target * target).sum(-1)
+    # clamp: make all elements in input into range [min, max]
     return 2 * (intersect / denominator.clamp(min=epsilon))
 
 
@@ -70,6 +87,7 @@ def flatten(tensor):
     The shapes are transformed as follows:
        (N, C, D, H, W) -> (C, N * D * H * W)
     """
+    # print('start flatten----------------------------------------------------------')
     # number of channels
     C = tensor.size(1)
     # new axis order

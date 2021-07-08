@@ -109,6 +109,7 @@ class UNet3D(BaseModel):
             nn.LeakyReLU())
 
     def forward(self, x):
+        # print(f'unet forward start------------------------------')
         #  Level 1 context pathway
         out = self.conv3d_c1_1(x)
         # print(f'1 x type = {x.type()}, x size = {x.size()}')
@@ -215,7 +216,7 @@ class UNet3D(BaseModel):
         out = out_pred + ds1_ds2_sum_upscale_ds3_sum_upscale
         # print(f'11 out type = {out.type()}, out size = {out.size()}')
         seg_layer = out
-        print(f'out shape = {seg_layer.shape}')
+        # print(f'out shape = {seg_layer.shape}')
         return seg_layer
 
     def test(self, device='cpu'):

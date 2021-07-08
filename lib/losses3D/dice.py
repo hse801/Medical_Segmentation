@@ -15,4 +15,5 @@ class DiceLoss(_AbstractDiceLoss):
             self.skip_index_after = skip_index_after
 
     def dice(self, input, target, weight):
+        # print(f'dice.py: input size = {input.size()}')
         return compute_per_channel_dice(input, target, weight=self.weight)

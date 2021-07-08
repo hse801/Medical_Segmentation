@@ -72,7 +72,6 @@ class MRIDatasetISEG2017(Dataset):
                                            sub_vol_path=self.sub_vol_path, th_percent=self.threshold,
                                            normalization=args.normalization)
 
-
         elif self.mode == 'val':
             utils.make_dirs(self.sub_vol_path)
             list_IDsT1 = list_IDsT1[split_id:]
