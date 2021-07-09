@@ -1,6 +1,6 @@
 import os
 
-import nibabel as nib
+import nibabel as nb
 import numpy as np
 import tables
 import SimpleITK as sitk
@@ -9,23 +9,15 @@ import torch
 import lib.medloaders as dataloaders
 import lib.medzoo as medzoo
 from lib.losses3D import DiceLoss
-from lib.visual3D_temp.BaseWriter import TensorboardWriter
-
 
 def predictor(PATH, data_loader):
-    # checkpoint = torch.load(model_path)
-    # model = checkpoint['model']
-    # model.load_state_dict(checkpoint['state_dict'])
-    # for parameter in model.parameters():
-    #     parameter.requires_grad = False
-
-
-    # model.load_state_dict(torch)
 
     # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
-    model_path = PATH + 'UNET3D_17_08___07_06_thyroid_/UNET3D_17_08___07_06_thyroid__BEST.pth'
+    # 2 channel label, 2 classes
+    model_path = PATH + 'UNET3D_17_25___07_08_thyroid_/UNET3D_17_25___07_08_thyroid__BEST.pth'
+    path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 
-    model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=12)
+    model = medzoo.UNet3D(in_channels=1, n_classes=2, base_n_filter=24)
     checkpoint = torch.load(model_path)
     model.load_state_dict(checkpoint['model_state_dict'])
 
@@ -43,7 +35,8 @@ def predictor(PATH, data_loader):
             input_tensor.requires_grad = False
 
             output = model(input_tensor)
-            criterion = DiceLoss(classes=1)
+            criterion = DiceLoss(classes=2)
+            print(f'output size = {output.size()}, target = {target.size()}')
             loss, per_ch_score = criterion(output, target)
             print(f'loss = {loss}, per_ch_score = {per_ch_score}')
 
@@ -55,26 +48,31 @@ def predictor(PATH, data_loader):
             output_arr = output.cpu().numpy()
             print(f'output_arr type = {type(output_arr)}, output_arr size = {np.shape(output_arr)}')
             print(f'output_arr min = {np.min(output_arr)}, output_arr max = {np.max(output_arr)}')
-            file_name = f'pred_{batch_idx}.nii.gz'
 
-            os.chdir('E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/UNET3D_17_08___07_06_thyroid_/prediction/')
+            file_name1 = f'pred_2ch_1_{batch_idx}.nii.gz'
+            file_name2 = f'pred_2ch_2_{batch_idx}.nii.gz'
+            file_name3 = f'pred_2ch_com_{batch_idx}.nii.gz'
+
+            # os.chdir('E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/UNET3D_17_08___07_06_thyroid_/prediction/')
             # os.mkdir('prediction/')
-            print(f'current: {os.getcwd()}')
+            # print(f'current: {os.getcwd()}')
             # os.mkdir('prediction/')
             # output_arr = np.where(output_arr > 0, 1, (np.where(output_arr < -3, 0, 1)))
 
             # set threshold to the predicted image
-            output_arr = np.where(output_arr > 0, 1, 0)
-
-            output_img = sitk.GetImageFromArray(output_arr[:, :, :])
+            output_arr = np.where(output_arr > 0.5, 1, 0)
+            output_img_1 = sitk.GetImageFromArray(output_arr[0, :, :, :])
+            output_img_2 = sitk.GetImageFromArray(output_arr[1, :, :, :])
+            output_combined = output_img_1 + output_img_2
             # print(f'output_img type = {type(output_img)}, output_img size = {output_img.size()}')
-            sitk.WriteImage(output_img[:, :, :], file_name)
-            print(f'{file_name} saved in {os.getcwd()}')
+            os.chdir(path_list[batch_idx])
+            sitk.WriteImage(output_img_1[:, :, :], file_name1)
+            sitk.WriteImage(output_img_2[:, :, :], file_name2)
+            sitk.WriteImage(output_combined[:, :, :], file_name3)
+            print(f'{file_name1} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'output type = {output.type()}, output size = {output.size()}')
         break
-
-            # loss, per_ch_score = self.criterion(output, target)
 
 
 _, _, pred_loader = dataloaders.thyroid_dataloader.generate_thyroid_dataset()
@@ -83,25 +81,3 @@ PATH = 'E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__last_epoch.pth'
 
 predictor(PATH=PATH, data_loader=pred_loader)
-
-
-# def predict_dataset(self, dataset, export_path):
-#     """
-#     Predicts the images in the given dataset and saves it to disk.
-#     Args:
-#         dataset: the dataset of images to be exported, instance of unet.dataset.Image2D
-#         export_path: path to folder where results to be saved
-#     """
-#     self.net.train(False)
-#     chk_mkdir(export_path)
-#
-#     for batch_idx, (X_batch, *rest) in enumerate(DataLoader(dataset, batch_size=1)):
-#         if isinstance(rest[0][0], str):
-#             image_filename = rest[0][0]
-#         else:
-#             image_filename = '%s.png' % str(batch_idx + 1).zfill(3)
-#
-#         X_batch = Variable(X_batch.to(device=self.device))
-#         y_out = self.net(X_batch).cpu().data.numpy()
-#
-#         io.imsave(os.path.join(export_path, image_filename), y_out[0, 1, :, :])

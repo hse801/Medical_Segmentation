@@ -70,7 +70,7 @@ def elastic_transform_3d(img_numpy, labels=None, alpha=1, sigma=20, c_val=0.0, m
 
         labels = lab_intrp(indices).reshape(shape).astype(labels.dtype)
         return img_numpy, labels
-
+    print('elastic deformation-----------------------------------------')
     return img_numpy
 
 

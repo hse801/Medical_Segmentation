@@ -44,6 +44,7 @@ class _AbstractDiceLoss(nn.Module):
         """
         Expand to one hot added extra for consistency reasons
         """
+        # print(f'Baseclass.py: input.size() = {input.size()}, target.size() = {target.size()}')
         # print(f'Baseclass.py: target size bf = {target.size()}')
         target = expand_as_one_hot(target.long(), self.classes)
         # print(f'Baseclass.py: target size af = {target.size()}')

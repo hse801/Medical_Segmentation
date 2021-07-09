@@ -134,8 +134,6 @@ def check_in_range(mid, crop_range, file_dim):
     return start, end
 
 
-
-
 _, _, pred_loader = dataloaders.thyroid_dataloader.generate_thyroid_dataset()
 PATH = 'E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'

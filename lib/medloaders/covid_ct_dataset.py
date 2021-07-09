@@ -59,10 +59,6 @@ class CovidCTDataset(Dataset):
             self.transform = val_transformer
         print('samples = ', len(self.img_list))
 
-
-
-
-
     def __len__(self):
         return len(self.img_list)
 
