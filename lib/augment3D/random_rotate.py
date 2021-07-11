@@ -2,7 +2,7 @@ import numpy as np
 import scipy.ndimage as ndimage
 
 
-def random_rotate3D(img_numpy, min_angle, max_angle):
+def random_rotate3D(img_numpy, label, min_angle, max_angle):
     """
     Returns a random rotated array in the same shape
     :param img_numpy: 3D numpy array
@@ -17,12 +17,16 @@ def random_rotate3D(img_numpy, min_angle, max_angle):
     angle = np.random.randint(low=min_angle, high=max_angle + 1)
     axes_random_id = np.random.randint(low=0, high=len(all_axes))
     axes = all_axes[axes_random_id]
+    # print(f'angle = {angle}, axes_random_id = {axes_random_id}, axes = {axes}')
+    img_numpy = ndimage.rotate(img_numpy, angle, axes=axes, reshape=False)
+    if not (label is None) and label.any():
+        label = ndimage.rotate(label, angle, axes=axes, reshape=False)
     print('random rotation-----------------------------------------------')
-    return ndimage.rotate(img_numpy, angle, axes=axes)
+    return img_numpy, label
 
 
 class RandomRotation(object):
-    def __init__(self, min_angle=-5, max_angle=5):
+    def __init__(self, min_angle=-10, max_angle=10):
         self.min_angle = min_angle
         self.max_angle = max_angle
 
@@ -36,8 +40,7 @@ class RandomRotation(object):
             img_numpy (numpy): rotated img.
             label (numpy): rotated Label segmentation map.
         """
-        img_numpy = random_rotate3D(img_numpy, self.min_angle, self.max_angle)
-        if label.any() != None:
-            label = random_rotate3D(label, self.min_angle, self.max_angle)
-        print(f'in random_rotate.py: img shape = {img_numpy.shape}, label shape = {label.shape}')
+        img_numpy, label = random_rotate3D(img_numpy, label, self.min_angle, self.max_angle)
+        # print('rotate image-------------------------')
+        # print(f'in random_rotate.py: img shape = {img_numpy.shape}, label shape = {label.shape}')
         return img_numpy, label

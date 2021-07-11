@@ -96,8 +96,8 @@ class Thyroid_dataset(Dataset):
             # img_mask_data[img_mask_data > 5120] = 2
 
             # img_mask_data = img_mask_data / img_mask_data.max()
-            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
-            # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+            # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
+            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
 
         # print(f'ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # print(f'ct max = {np.max(img_ct_data)}, mask max = {np.max(img_mask_data)}')
@@ -105,15 +105,16 @@ class Thyroid_dataset(Dataset):
 
         # if self.augmentation:
         self.transform = augment3D.RandomChoice(
-            transforms=[augment3D.GaussianNoise(mean=0, std=0.01),
-                        ], p=0.3)
+            transforms=[augment3D.GaussianNoise(mean=0, std=0.01), augment3D.RandomRotation(),
+                        augment3D.RandomShift(), augment3D.ElasticTransform()
+                        ], p=0.8)
         # transforms = tio.Compose([
         #     tio.
         # ])
         # print(f'ct type = {type(img_ct_data)}, mask type = {type(img_mask_data)}')
-        print(f'bf ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
+        # print(f'bf ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
-        print(f'af ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
+        # print(f'af ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # img_ct_data, mask_combined = self.transform(img_ct_data, mask_combined)
 
         # img_ct_dataimg_ct_data
@@ -122,8 +123,8 @@ class Thyroid_dataset(Dataset):
         # print(f'torch.FloatTensor(img_ct_data.copy()).unsqueeze(0) = {torch.FloatTensor(img_ct_data.copy()).size()}')
         # print(f'torch.FloatTensor(img_ct_data.copy()) = {torch.FloatTensor(img_ct_data.copy()).unsqueeze(0).size()}')
 
-        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
-        # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+        # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
+        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
 
         # if self.transform:
         #     if (self.test_flag == 0):
@@ -142,17 +143,22 @@ class Thyroid_dataset(Dataset):
 
 """Loading DATA"""
 
+# 128x128x128
 ct_path = glob.glob('E:/HSE/Thyroid/Dicom/*/CT_rsmpl.nii.gz')
 mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/Mask_rsmpl.nii.gz')
+# 64x64x64
 crop_ct_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_ct.nii.gz')
 crop_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask.nii.gz')
+# 64x64x64, left and right each
+left_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_left.nii.gz')
+right_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_right.nii.gz')
 
 # train_ds = Thyroid_dataset(ct_path[0:308], mask_path[0:308], test_flag=0)
 # val_ds = Thyroid_dataset(ct_path[308:368], mask_path[308:368], test_flag=1)
 
 train_ds = Thyroid_dataset(crop_ct_path[60:368], crop_mask_path[60:368], test_flag=0)
 val_ds = Thyroid_dataset(crop_ct_path[0:60], crop_mask_path[0:60], test_flag=1)
-pred_ds = Thyroid_dataset(ct_path[0:368], mask_path[0:368], test_flag=1)
+pred_ds = Thyroid_dataset(ct_path[0:368], crop_mask_path[0:368], test_flag=1)
 
 
 def generate_thyroid_dataset():
