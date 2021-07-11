@@ -106,7 +106,7 @@ class Thyroid_dataset(Dataset):
         # if self.augmentation:
         self.transform = augment3D.RandomChoice(
             transforms=[augment3D.GaussianNoise(mean=0, std=0.01), augment3D.RandomRotation(),
-                        augment3D.RandomShift(), augment3D.ElasticTransform()
+                        augment3D.RandomShift(), augment3D.ElasticTransform(), augment3D.RandomZoom()
                         ], p=0.8)
         # transforms = tio.Compose([
         #     tio.
