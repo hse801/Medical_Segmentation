@@ -3,7 +3,7 @@ import numpy as np
 
 def random_noise(img_numpy, mean=0, std=0.001):
     noise = np.random.normal(mean, std, img_numpy.shape)
-    print('random_noise--------------------------------')
+    # print('random_noise--------------------------------')
     return img_numpy + noise
 
 

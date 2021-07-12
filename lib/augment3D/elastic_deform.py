@@ -32,7 +32,7 @@ def elastic_transform_3d(img_numpy, labels=None, alpha=1, sigma=20, c_val=0.0, m
     """
     assert img_numpy.ndim == 3, 'Wrong img shape, provide 3D img'
     if labels is not None:
-        assert img_numpy.shape == labels.shape, "Shapes of img and label do not much!"
+        assert img_numpy.shape == labels.shape, "Shapes of img and label do not match!"
     shape = img_numpy.shape
 
     # Define 3D coordinate system

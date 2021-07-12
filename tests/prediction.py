@@ -23,9 +23,9 @@ def predictor(PATH, data_loader):
     # model.load_state_dict(torch)
 
     # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
-    model_path = PATH + 'UNET3D_17_08___07_06_thyroid_/UNET3D_17_08___07_06_thyroid__BEST.pth'
+    model_path = PATH + 'UNET3D_22_55___07_11_thyroid_/UNET3D_22_55___07_11_thyroid__BEST.pth'
 
-    model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=12)
+    model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=24)
     checkpoint = torch.load(model_path)
     model.load_state_dict(checkpoint['model_state_dict'])
 
@@ -55,7 +55,7 @@ def predictor(PATH, data_loader):
             output_arr = output.cpu().numpy()
             print(f'output_arr type = {type(output_arr)}, output_arr size = {np.shape(output_arr)}')
             print(f'output_arr min = {np.min(output_arr)}, output_arr max = {np.max(output_arr)}')
-            file_name = f'pred_{batch_idx}.nii.gz'
+            file_name = f'pred_22_55_07_11_{batch_idx}.nii.gz'
 
             os.chdir('E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/UNET3D_17_08___07_06_thyroid_/prediction/')
             # os.mkdir('prediction/')

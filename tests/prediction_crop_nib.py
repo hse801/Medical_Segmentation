@@ -81,17 +81,19 @@ def crop_file(folder_path, count):
     ct_file = folder_path + 'CT_rsmpl.nii.gz'
     mask_file = folder_path + 'Mask_rsmpl.nii.gz'
     spect_file = folder_path + 'SPECT.nii.gz'
-    pred_file = glob.glob(folder_path + 'pred*.nii.gz')
+    pred_file = glob.glob(folder_path + f'pred_{count}.nii.gz')
+    print(f'pred_file = {pred_file}')
 
     print(f'ct path = {ct_file}')
-    img_pred = sitk.ReadImage(pred_file[0])
-    img_pred_data = sitk.GetArrayFromImage(img_pred)
+    img_pred = nb.load(pred_file[0])
+    img_pred_data = img_pred.get_fdata()
     # img_pred = nb.load(pred_file)
     # img_pred_data = img_pred.get_fdata()
     nzero = img_pred_data.nonzero()
     # print(f'nzero shape = {np.shape(nzero)}')
     # print(f'nzero = {nzero}')
     # print(f'nzero[0] = {min(nzero[0])}')
+    # print(f'nzero[2] = {nzero}')
     x_mid = int((min(nzero[2]) + max(nzero[2])) / 2)
     y_mid = int((min(nzero[1]) + max(nzero[1])) / 2)
     z_mid = int((min(nzero[0]) + max(nzero[0])) / 2)
@@ -100,13 +102,13 @@ def crop_file(folder_path, count):
     os.chdir(folder_path)
 
     cropped_ct_img = crop_file_to_img(x_mid, y_mid, z_mid, ct_file)
-    sitk.WriteImage(cropped_ct_img[:, :, :], f'crop_ct_size_{count}.nii.gz')
+    nb.save(cropped_ct_img, f'crop_ct_nb_{count}.nii.gz')
 
     cropped_spect_img = crop_file_to_img(x_mid, y_mid, z_mid, spect_file)
-    sitk.WriteImage(cropped_spect_img[:, :, :], f'crop_spect_size_{count}.nii.gz')
+    nb.save(cropped_spect_img, f'crop_spect_nb_{count}.nii.gz')
 
     cropped_mask_img = crop_file_to_img(x_mid, y_mid, z_mid, mask_file)
-    sitk.WriteImage(cropped_mask_img[:, :, :], f'crop_mask_size_{count}.nii.gz')
+    nb.save(cropped_mask_img, f'crop_mask_nb_{count}.nii.gz')
 
     print(f'files saved in {os.getcwd()}')
     # x_max =
@@ -114,11 +116,11 @@ def crop_file(folder_path, count):
 
 def crop_file_to_img(x_mid, y_mid, z_mid, file_to_crop):
 
-    file_img = sitk.ReadImage(file_to_crop)
-    file_arr = sitk.GetArrayFromImage(file_img)
+    file_img = nb.load(file_to_crop)
+    file_arr = file_img.get_fdata()
 
     # set the same voxel size with file before crop
-    file_spacing = file_img.GetSpacing()
+    # file_spacing = file_img.GetSpacing()
 
     # file_origin = file_img.GetOrigin()
     # file_direction = file_img.GetDirection()
@@ -127,8 +129,9 @@ def crop_file_to_img(x_mid, y_mid, z_mid, file_to_crop):
     y_start, y_end = check_in_range(y_mid, crop_range=32, file_dim=128)
     x_start, x_end = check_in_range(x_mid, crop_range=32, file_dim=128)
     cropped_arr = file_arr[z_start:z_end, y_start:y_end, x_start:x_end]
-    cropped_img = sitk.GetImageFromArray(cropped_arr)
-    cropped_img.SetSpacing(file_spacing)
+    # print(f'file_img.affine = {file_img.affine}')
+    cropped_img = nb.Nifti1Image(cropped_arr, file_img.affine, file_img.header)
+    # cropped_img.SetSpacing(file_spacing)
     # cropped_img.CopyInformation(file_img)
     # crop_spacing = cropped_img.GetSpacing()
     # crop_origin = cropped_img.GetOrigin()
@@ -159,7 +162,7 @@ PATH = 'E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__last_epoch.pth'
 
-predictor(PATH=PATH, data_loader=pred_loader)
+# predictor(PATH=PATH, data_loader=pred_loader)
 
 folder_path = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 # print(f'type = {type(folder_path)}, len = {len(folder_path)}')
@@ -169,6 +172,6 @@ for i in folder_path:
     count += 1
     print(f'count = {count}')
     print('-------------------------------\n')
-    break
+    # break
 # ct_path = glob.glob('E:/HSE/Thyroid/Dicom/*/CT_rsmpl.nii.gz')
 # mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/Mask_rsmpl.nii.gz')

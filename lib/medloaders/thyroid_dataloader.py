@@ -149,6 +149,9 @@ mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/Mask_rsmpl.nii.gz')
 # 64x64x64
 crop_ct_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_ct.nii.gz')
 crop_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask.nii.gz')
+# 64x64x64
+crop_ct_size_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_ct_size*.nii.gz')
+crop_mask_size_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_size*.nii.gz')
 # 64x64x64, left and right each
 left_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_left.nii.gz')
 right_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_right.nii.gz')
@@ -156,9 +159,9 @@ right_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_right.nii.gz')
 # train_ds = Thyroid_dataset(ct_path[0:308], mask_path[0:308], test_flag=0)
 # val_ds = Thyroid_dataset(ct_path[308:368], mask_path[308:368], test_flag=1)
 
-train_ds = Thyroid_dataset(crop_ct_path[60:368], crop_mask_path[60:368], test_flag=0)
-val_ds = Thyroid_dataset(crop_ct_path[0:60], crop_mask_path[0:60], test_flag=1)
-pred_ds = Thyroid_dataset(ct_path[0:368], crop_mask_path[0:368], test_flag=1)
+train_ds = Thyroid_dataset(crop_ct_size_path[60:368], crop_mask_size_path[60:368], test_flag=0)
+val_ds = Thyroid_dataset(crop_ct_size_path[0:60], crop_mask_size_path[0:60], test_flag=1)
+pred_ds = Thyroid_dataset(crop_ct_size_path[0:368], crop_mask_size_path[0:368], test_flag=1)
 
 
 def generate_thyroid_dataset():

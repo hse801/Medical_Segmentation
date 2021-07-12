@@ -16,7 +16,7 @@ def random_shift(img_numpy, label, max_percentage=0.1):
     d3 = np.random.randint(-m3, m3)
 
     # print(f'd1 = {d1}, d2 = {d2}, d3 = {d3}')
-    print('random_shift---------------------------------')
+    # print('random_shift---------------------------------')
     img_numpy = transform_matrix_offset_center_3d(img_numpy, d1, d2, d3)
     if not (label is None) and label.any():
         label = transform_matrix_offset_center_3d(label, d1, d2, d3)
