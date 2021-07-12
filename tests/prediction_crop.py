@@ -19,9 +19,9 @@ def predictor(PATH, data_loader):
 
     path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 
-    ex_path = 'E:/HSE/Thyroid/Dicom/1.2.410.2000010.82.2291.1002869190726010/CT_rsmpl.nii.gz'
-    ex_img = sitk.ReadImage(ex_path)
-    ex_spacing = ex_img.GetSpacing()
+    # ex_path = 'E:/HSE/Thyroid/Dicom/1.2.410.2000010.82.2291.1002869190726010/CT_rsmpl.nii.gz'
+    # ex_img = sitk.ReadImage(ex_path)
+    # ex_spacing = ex_img.GetSpacing()
 
     model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=12)
     checkpoint = torch.load(model_path)
@@ -65,14 +65,15 @@ def predictor(PATH, data_loader):
             # set threshold to the predicted image
             output_arr = np.where(output_arr > 0, 1, 0)
             output_img = sitk.GetImageFromArray(output_arr[:, :, :])
-            output_img.SetSpacing(ex_spacing)
+            print(f'output_img.GetSpacing = {output_img.GetSpacing()}')
+            # output_img.SetSpacing(ex_spacing)
             # print(f'output_img type = {type(output_img)}, output_img size = {output_img.size()}')
             os.chdir(path_list[batch_idx])
             sitk.WriteImage(output_img[:, :, :], file_name)
             print(f'{file_name} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'output type = {output.type()}, output size = {output.size()}')
-        break
+        # break
 
             # loss, per_ch_score = self.criterion(output, target)
 
@@ -118,7 +119,7 @@ def crop_file_to_img(x_mid, y_mid, z_mid, file_to_crop):
     file_arr = sitk.GetArrayFromImage(file_img)
 
     # set the same voxel size with file before crop
-    file_spacing = file_img.GetSpacing()
+    # file_spacing = file_img.GetSpacing()
 
     # file_origin = file_img.GetOrigin()
     # file_direction = file_img.GetDirection()
@@ -128,7 +129,7 @@ def crop_file_to_img(x_mid, y_mid, z_mid, file_to_crop):
     x_start, x_end = check_in_range(x_mid, crop_range=32, file_dim=128)
     cropped_arr = file_arr[z_start:z_end, y_start:y_end, x_start:x_end]
     cropped_img = sitk.GetImageFromArray(cropped_arr)
-    cropped_img.SetSpacing(file_spacing)
+    # cropped_img.SetSpacing(file_spacing)
     # cropped_img.CopyInformation(file_img)
     # crop_spacing = cropped_img.GetSpacing()
     # crop_origin = cropped_img.GetOrigin()
@@ -163,12 +164,12 @@ predictor(PATH=PATH, data_loader=pred_loader)
 
 folder_path = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 # print(f'type = {type(folder_path)}, len = {len(folder_path)}')
-count = 0
-for i in folder_path:
-    crop_file(i, count)
-    count += 1
-    print(f'count = {count}')
-    print('-------------------------------\n')
-    break
+# count = 0
+# for i in folder_path:
+#     crop_file(i, count)
+#     count += 1
+#     print(f'count = {count}')
+#     print('-------------------------------\n')
+#     break
 # ct_path = glob.glob('E:/HSE/Thyroid/Dicom/*/CT_rsmpl.nii.gz')
 # mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/Mask_rsmpl.nii.gz')

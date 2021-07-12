@@ -20,8 +20,7 @@ def predictor(PATH, data_loader):
     path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 
     ex_path = 'E:/HSE/Thyroid/Dicom/1.2.410.2000010.82.2291.1002869190726010/CT_rsmpl.nii.gz'
-    ex_img = sitk.ReadImage(ex_path)
-    ex_spacing = ex_img.GetSpacing()
+    ex_img = nb.load(ex_path)
 
     model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=12)
     checkpoint = torch.load(model_path)
@@ -64,11 +63,10 @@ def predictor(PATH, data_loader):
 
             # set threshold to the predicted image
             output_arr = np.where(output_arr > 0, 1, 0)
-            output_img = sitk.GetImageFromArray(output_arr[:, :, :])
-            output_img.SetSpacing(ex_spacing)
+            output_img = nb.Nifti1Image(output_arr, ex_img.affine, ex_img.header)
             # print(f'output_img type = {type(output_img)}, output_img size = {output_img.size()}')
             os.chdir(path_list[batch_idx])
-            sitk.WriteImage(output_img[:, :, :], file_name)
+            nb.save(output_img, file_name)
             print(f'{file_name} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'output type = {output.type()}, output size = {output.size()}')
@@ -162,16 +160,16 @@ PATH = 'E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__last_epoch.pth'
 
-# predictor(PATH=PATH, data_loader=pred_loader)
+predictor(PATH=PATH, data_loader=pred_loader)
 
 folder_path = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 # print(f'type = {type(folder_path)}, len = {len(folder_path)}')
 count = 0
-for i in folder_path:
-    crop_file(i, count)
-    count += 1
-    print(f'count = {count}')
-    print('-------------------------------\n')
+# for i in folder_path:
+#     crop_file(i, count)
+#     count += 1
+#     print(f'count = {count}')
+#     print('-------------------------------\n')
     # break
 # ct_path = glob.glob('E:/HSE/Thyroid/Dicom/*/CT_rsmpl.nii.gz')
 # mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/Mask_rsmpl.nii.gz')

@@ -205,13 +205,27 @@ class UNet3D(BaseModel):
         # Level 4 localization pathway
         out = torch.cat([out, context_1], dim=1)
         out = self.conv_norm_lrelu_l4(out)
+        # print(f'out bf conv3d_l4 = {out.size()}')
         out_pred = self.conv3d_l4(out)
+        # print(f'out_pred af conv3d_l4 = {out_pred.size()}')
 
+        # print(f'ds2 == out_pred = {ds2 == out_pred}')
+
+        # print(f'ds2 = {ds2.size()}')
         ds2_1x1_conv = self.ds2_1x1_conv3d(ds2)
+        # print(f'ds2_1x1_conv = {ds2_1x1_conv.size()}')
+
         ds1_ds2_sum_upscale = self.upscale(ds2_1x1_conv)
+        # print(f'ds1_ds2_sum_upscale = {ds1_ds2_sum_upscale.size()}')
+
+        # print(f'ds3 = {ds3.size()}')
         ds3_1x1_conv = self.ds3_1x1_conv3d(ds3)
+        # print(f'ds3_1x1_conv = {ds3_1x1_conv.size()}')
+
         ds1_ds2_sum_upscale_ds3_sum = ds1_ds2_sum_upscale + ds3_1x1_conv
+        # print(f'ds1_ds2_sum_upscale_ds3_sum = {ds1_ds2_sum_upscale_ds3_sum.size()}')
         ds1_ds2_sum_upscale_ds3_sum_upscale = self.upscale(ds1_ds2_sum_upscale_ds3_sum)
+        # print(f'ds1_ds2_sum_upscale_ds3_sum_upscale = {ds1_ds2_sum_upscale_ds3_sum_upscale.size()}')
 
         out = out_pred + ds1_ds2_sum_upscale_ds3_sum_upscale
         # print(f'11 out type = {out.type()}, out size = {out.size()}')

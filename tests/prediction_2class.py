@@ -10,11 +10,12 @@ import lib.medloaders as dataloaders
 import lib.medzoo as medzoo
 from lib.losses3D import DiceLoss
 
+
 def predictor(PATH, data_loader):
 
     # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
     # 2 channel label, 2 classes
-    model_path = PATH + 'UNET3D_17_25___07_08_thyroid_/UNET3D_17_25___07_08_thyroid__BEST.pth'
+    model_path = PATH + 'UNET3D_22_44___07_12_thyroid_/UNET3D_22_44___07_12_thyroid__BEST.pth'
     path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 
     model = medzoo.UNet3D(in_channels=1, n_classes=2, base_n_filter=24)
@@ -51,7 +52,7 @@ def predictor(PATH, data_loader):
 
             file_name1 = f'pred_2ch_1_{batch_idx}.nii.gz'
             file_name2 = f'pred_2ch_2_{batch_idx}.nii.gz'
-            file_name3 = f'pred_2ch_com_{batch_idx}.nii.gz'
+            file_name3 = f'pred_2ch_{batch_idx}.nii.gz'
 
             # os.chdir('E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/UNET3D_17_08___07_06_thyroid_/prediction/')
             # os.mkdir('prediction/')
@@ -60,19 +61,24 @@ def predictor(PATH, data_loader):
             # output_arr = np.where(output_arr > 0, 1, (np.where(output_arr < -3, 0, 1)))
 
             # set threshold to the predicted image
-            output_arr = np.where(output_arr > 0.5, 1, 0)
+            output_arr = np.where(output_arr > 0, 1, 0)
             output_img_1 = sitk.GetImageFromArray(output_arr[0, :, :, :])
             output_img_2 = sitk.GetImageFromArray(output_arr[1, :, :, :])
             output_combined = output_img_1 + output_img_2
+            output_combined_arr = sitk.GetArrayFromImage(output_combined)
+            # if value is 2, change to 1
+            output_combined_arr = np.where(output_combined_arr > 1, 1, output_combined_arr)
+            print(f'output_combined_arr max = {output_combined_arr.max()}')
+            output_combined = sitk.GetImageFromArray(output_combined_arr)
             # print(f'output_img type = {type(output_img)}, output_img size = {output_img.size()}')
             os.chdir(path_list[batch_idx])
-            sitk.WriteImage(output_img_1[:, :, :], file_name1)
-            sitk.WriteImage(output_img_2[:, :, :], file_name2)
-            sitk.WriteImage(output_combined[:, :, :], file_name3)
+            # sitk.WriteImage(output_img_1[:, :, :], file_name1)
+            # sitk.WriteImage(output_img_2[:, :, :], file_name2)
+            # sitk.WriteImage(output_combined[:, :, :], file_name3)
             print(f'{file_name1} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'output type = {output.type()}, output size = {output.size()}')
-        break
+        # break
 
 
 _, _, pred_loader = dataloaders.thyroid_dataloader.generate_thyroid_dataset()

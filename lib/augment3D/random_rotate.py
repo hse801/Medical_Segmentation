@@ -22,6 +22,7 @@ def random_rotate3D(img_numpy, label, min_angle, max_angle):
     if not (label is None) and label.any():
         label = ndimage.rotate(label, angle, axes=axes, reshape=False)
     # print('random rotation-----------------------------------------------')
+
     return img_numpy, label
 
 

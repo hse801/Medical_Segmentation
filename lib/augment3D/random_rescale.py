@@ -16,6 +16,7 @@ def random_zoom(img_numpy, label, min_percentage=0.8, max_percentage=1.1):
                             [0, 0, 0, 1]])
     img_numpy = ndimage.interpolation.affine_transform(img_numpy, zoom_matrix)
     label = ndimage.interpolation.affine_transform(label, zoom_matrix)
+    # print('random_rescale--------------------------')
     return img_numpy, label
 
 
@@ -26,4 +27,5 @@ class RandomZoom(object):
 
     def __call__(self, img_numpy, label=None):
         img_numpy, label = random_zoom(img_numpy, label, self.min_percentage, self.max_percentage)
+
         return img_numpy, label
