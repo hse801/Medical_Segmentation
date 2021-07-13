@@ -35,26 +35,27 @@ class Thyroid_dataset(Dataset):
             # print(f'before squeeze ct shape = {img_ct_data.shape}')
             # img_ct_data = img_ct_data.unsqueeze(0)
 
-            # img_mask_path = self.mask_path[idx]
-            # img_mask = sitk.ReadImage(img_mask_path)
-            # img_mask_data = sitk.GetArrayFromImage(img_mask)
-            # print(f'mask path for training = {img_mask_path}')
+            # for 1 channel
+            img_mask_path = self.mask_path[idx]
+            img_mask = sitk.ReadImage(img_mask_path)
+            img_mask_data = sitk.GetArrayFromImage(img_mask)
+            img_mask_data[img_mask_data > 0] = 1
 
-            # img_mask_data[img_mask_data > 0] = 1
+            # print(f'mask path for training = {img_mask_path}')
 
             # img_mask_data[img_mask_data == 5120] = 1 # for 2 labels
             # img_mask_data[img_mask_data > 5120] = 2
 
             # for 2 channel output
-            img_left_path = self.left_path[idx]
-            img_left = sitk.ReadImage(img_left_path)
-            img_left_data = sitk.GetArrayFromImage(img_left)
-
-            img_right_path = self.right_path[idx]
-            img_right = sitk.ReadImage(img_right_path)
-            img_right_data = sitk.GetArrayFromImage(img_right)
-
-            mask_combined = np.stack((img_left_data, img_right_data), axis=0)
+            # img_left_path = self.left_path[idx]
+            # img_left = sitk.ReadImage(img_left_path)
+            # img_left_data = sitk.GetArrayFromImage(img_left)
+            #
+            # img_right_path = self.right_path[idx]
+            # img_right = sitk.ReadImage(img_right_path)
+            # img_right_data = sitk.GetArrayFromImage(img_right)
+            #
+            # mask_combined = np.stack((img_left_data, img_right_data), axis=0)
 
 
             # mask_left = np.where(img_mask_data == 5120, 1, 0)
@@ -80,28 +81,27 @@ class Thyroid_dataset(Dataset):
             # img_ct_data = (img_ct_data - nums[0]) / (nums[1] + 1e-8)
             img_ct_data = (img_ct_data - np.mean(img_ct_data)) / (np.std(img_ct_data) + 1e-8)
 
-            # img_mask_path = self.mask_path[idx]
-            # img_mask = sitk.ReadImage(img_mask_path)
-            # img_mask_data = sitk.GetArrayFromImage(img_mask)
+            # for 1 channel
+            img_mask_path = self.mask_path[idx]
+            img_mask = sitk.ReadImage(img_mask_path)
+            img_mask_data = sitk.GetArrayFromImage(img_mask)
+            img_mask_data[img_mask_data > 0] = 1
 
             # print(f'mask path for validation = {img_mask_path}')
             # print(f'before  reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
             # img_mask_data = img_mask_data.reshape(1, -1, 128, 160)
             # print(f'after reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
 
-            # for 1 label
-            # img_mask_data[img_mask_data > 0] = 1
-
             # for 2 channel output
-            img_left_path = self.left_path[idx]
-            img_left = sitk.ReadImage(img_left_path)
-            img_left_data = sitk.GetArrayFromImage(img_left)
-
-            img_right_path = self.right_path[idx]
-            img_right = sitk.ReadImage(img_right_path)
-            img_right_data = sitk.GetArrayFromImage(img_right)
-
-            mask_combined = np.stack((img_left_data, img_right_data), axis=0)
+            # img_left_path = self.left_path[idx]
+            # img_left = sitk.ReadImage(img_left_path)
+            # img_left_data = sitk.GetArrayFromImage(img_left)
+            #
+            # img_right_path = self.right_path[idx]
+            # img_right = sitk.ReadImage(img_right_path)
+            # img_right_data = sitk.GetArrayFromImage(img_right)
+            #
+            # mask_combined = np.stack((img_left_data, img_right_data), axis=0)
 
             # create 2 channel mask
             # mask_left = np.where(img_mask_data == 5120, 1, 0)
@@ -114,8 +114,8 @@ class Thyroid_dataset(Dataset):
 
             # img_mask_data = img_mask_data / img_mask_data.max()
 
-            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
-            # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+            # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
+            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
 
         # print(f'ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # print(f'ct max = {np.max(img_ct_data)}, mask max = {np.max(img_mask_data)}')
@@ -132,8 +132,9 @@ class Thyroid_dataset(Dataset):
         # print(f'ct type = {type(img_ct_data)}, mask type = {type(img_mask_data)}')
         # print(f'bf ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
 
-        # [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
-        [img_ct_data], mask_combined = self.transform([img_ct_data], mask_combined)
+        [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
+        # [img_ct_data], mask_combined = self.transform([img_ct_data], mask_combined)
+
         # print(f'af ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # img_ct_data, mask_combined = self.transform(img_ct_data, mask_combined)
 
@@ -143,8 +144,8 @@ class Thyroid_dataset(Dataset):
         # print(f'torch.FloatTensor(img_ct_data.copy()).unsqueeze(0) = {torch.FloatTensor(img_ct_data.copy()).size()}')
         # print(f'torch.FloatTensor(img_ct_data.copy()) = {torch.FloatTensor(img_ct_data.copy()).unsqueeze(0).size()}')
 
-        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
-        # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+        # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
+        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
 
     def __len__(self):
         return len(self.ct_path)
@@ -168,11 +169,11 @@ right_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_right.nii.gz')
 # train_ds = Thyroid_dataset(ct_path[0:308], mask_path[0:308], test_flag=0)
 # val_ds = Thyroid_dataset(ct_path[308:368], mask_path[308:368], test_flag=1)
 
-train_ds = Thyroid_dataset(crop_ct_path[60:368], test_flag=0, left_path=left_mask_path[60:368], right_path=right_mask_path[60:368])
-val_ds = Thyroid_dataset(crop_ct_path[0:60], test_flag=1, left_path=left_mask_path[0:60], right_path=right_mask_path[0:60])
-pred_ds = Thyroid_dataset(crop_ct_path[0:368], right_mask_path[0:368], test_flag=1)
-# train_ds = Thyroid_dataset(crop_ct_path[60:368], left_mask_path[60:368], test_flag=0)
-# val_ds = Thyroid_dataset(crop_ct_path[0:60], left_mask_path[0:60], test_flag=1)
+# train_ds = Thyroid_dataset(crop_ct_path[60:368], test_flag=0, left_path=left_mask_path[60:368], right_path=right_mask_path[60:368])
+# val_ds = Thyroid_dataset(crop_ct_path[0:60], test_flag=1, left_path=left_mask_path[0:60], right_path=right_mask_path[0:60])
+pred_ds = Thyroid_dataset(crop_ct_path[0:368], mask_path=left_mask_path[0:368], test_flag=1)
+train_ds = Thyroid_dataset(crop_ct_path[60:368], left_mask_path[60:368], test_flag=0)
+val_ds = Thyroid_dataset(crop_ct_path[0:60], left_mask_path[0:60], test_flag=1)
 # pred_ds = Thyroid_dataset(crop_ct_path[0:368], right_mask_path[0:368], test_flag=1)
 
 

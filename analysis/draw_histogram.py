@@ -41,6 +41,10 @@ def draw_histogram(file_path):
 
 
 path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
+count = 0
 for i in path_list:
     draw_histogram(i)
-    break
+    count += 1
+    print(f'count = {count}')
+    if count > 9:
+        break
