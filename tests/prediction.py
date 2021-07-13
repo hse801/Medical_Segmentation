@@ -23,10 +23,10 @@ def predictor(PATH, data_loader):
     # model.load_state_dict(torch)
 
     # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
-    model_path = PATH + 'UNET3D_20_40___07_08_thyroid_/UNET3D_20_40___07_08_thyroid__BEST.pth'
+    model_path = PATH + 'UNET3D_01_20___07_13_thyroid_/UNET3D_01_20___07_13_thyroid__BEST.pth'
     path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 
-    model = medzoo.UNet3D(in_channels=1, n_classes=2, base_n_filter=24)
+    model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=24)
     checkpoint = torch.load(model_path)
     model.load_state_dict(checkpoint['model_state_dict'])
 
@@ -56,7 +56,7 @@ def predictor(PATH, data_loader):
             output_arr = output.cpu().numpy()
             print(f'output_arr type = {type(output_arr)}, output_arr size = {np.shape(output_arr)}')
             print(f'output_arr min = {np.min(output_arr)}, output_arr max = {np.max(output_arr)}')
-            file_name = f'pred_20_40_07_08_{batch_idx}.nii.gz'
+            file_name = f'pred_01_20_07_13_left_{batch_idx}.nii.gz'
 
             # os.chdir('E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/UNET3D_17_08___07_06_thyroid_/prediction/')
             # # os.mkdir('prediction/')
@@ -65,7 +65,7 @@ def predictor(PATH, data_loader):
             # output_arr = np.where(output_arr > 0, 1, (np.where(output_arr < -3, 0, 1)))
 
             # set threshold to the predicted image
-            # output_arr = np.where(output_arr > 0, 1, 0)
+            output_arr = np.where(output_arr > 0, 1, 0)
 
             output_img = sitk.GetImageFromArray(output_arr[:, :, :])
             # print(f'output_img type = {type(output_img)}, output_img size = {output_img.size()}')
@@ -74,7 +74,7 @@ def predictor(PATH, data_loader):
             print(f'{file_name} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'output type = {output.type()}, output size = {output.size()}')
-        break
+        # break
 
             # loss, per_ch_score = self.criterion(output, target)
 
