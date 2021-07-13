@@ -17,6 +17,7 @@ nonzero 영역의 인덱스를 비교하여 라벨 지정
 '''
 
 mask_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
+reversed_idx = []
 
 for idx, path in enumerate(mask_list):
 
@@ -30,20 +31,45 @@ for idx, path in enumerate(mask_list):
 
     mask1_nzero = mask_1.nonzero()
     mask2_nzero = mask_2.nonzero()
-    print(f'np.min(mask1_nzero[2]) = {np.min(mask1_nzero[2])}, np.min(mask2_nzero[2]) = {np.min(mask2_nzero[2])}')
 
     # if mask has only left or right thyroid
-    if not mask2_nzero[2].size > 0 or not mask1_nzero[2].size:
-        mask_left = mask_1
-        mask_right = mask_2
-    # figure which array is left and right
-    if np.min(mask1_nzero[2]) < np.min(mask2_nzero[2]):
-        mask_left = mask_1
-        mask_right = mask_2
-    else:
-        mask_left = mask_2
-        mask_right = mask_1
+    # 이때 왼쪽 오른쪽 바뀐 경우 있음
+    # if mask 2 is empty(7168)
+    if not mask2_nzero[2].size > 0:
+        print(f'only one thyroid')
+        print('mask 2 is empty')
+        print(f'max(mask1_nzero[2]) = {min(mask1_nzero[2])}, mask_1.size / 2 = {np.shape(mask_1)[2] / 2}')
+        if min(mask1_nzero[2]) < 28:
+            print('not reversed')
+            mask_left = mask_1
+            mask_right = mask_2
+        else:
+            print('reversed')
+            mask_left = mask_2
+            mask_right = mask_1
+    # if mask 1 is empty(5120)
+    # 데이터셋에 이런 경우 없음
+    # elif not mask1_nzero[2].size > 0:
+    #     print('mask 1 is empty')
+    #     if max(mask2_nzero[2]) > np.shape(mask_1)[2] / 2:
+    #         mask_left = mask_2
+    #         mask_right = mask_1
+    #     else:
+    #         mask_left = mask_1
+    #         mask_right = mask_2
 
+    else:
+        print(f'np.min(mask1_nzero[2]) = {np.min(mask1_nzero[2])}, np.min(mask2_nzero[2]) = {np.min(mask2_nzero[2])}')
+        # figure which array is left and right
+        if np.min(mask1_nzero[2]) < np.min(mask2_nzero[2]):
+            mask_left = mask_1
+            mask_right = mask_2
+        else:
+            print(f'left and right reversed')
+            reversed_idx.append(idx)
+            mask_left = mask_2
+            mask_right = mask_1
+    print(f'reversed_idx = {reversed_idx}')
     mask_left_img = sitk.GetImageFromArray(mask_left[:, :, :])
     mask_right_img = sitk.GetImageFromArray(mask_right[:, :, :])
 
