@@ -18,3 +18,6 @@ mask2_nzero = mask_2.nonzero()
 if not mask2_nzero[2].size > 0 or not mask1_nzero[2].size:
     print(f'mask empty')
 # print(f'np.min(mask1_nzero[2]) = {mask1_nzero}, np.min(mask2_nzero[2]) = {mask2_nzero}')
+
+ A = np.array([[[ 1,  2,  3],[ 4,  5,  6],[12, 34, 90]],
+                [[ 4,  5,  6],[ 2,  5,  6],[ 7,  3,  4]]])
