@@ -15,7 +15,7 @@ def predictor(PATH, data_loader):
 
     # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
     # 2 channel label, 2 classes
-    model_path = PATH + 'UNET3D_22_44___07_12_thyroid_/UNET3D_22_44___07_12_thyroid__BEST.pth'
+    model_path = PATH + 'UNET3D_15_03___07_13_thyroid_/UNET3D_15_03___07_13_thyroid__BEST.pth'
     path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
 
     model = medzoo.UNet3D(in_channels=1, n_classes=2, base_n_filter=24)
@@ -52,7 +52,7 @@ def predictor(PATH, data_loader):
 
             # file_name1 = f'pred_2ch_1_{batch_idx}.nii.gz'
             # file_name2 = f'pred_2ch_2_{batch_idx}.nii.gz'
-            file_name = f'pred_2ch_{batch_idx}.nii.gz'
+            file_name = f'pred_15_03_07_13_{batch_idx}.nii.gz'
 
             # os.chdir('E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/UNET3D_17_08___07_06_thyroid_/prediction/')
             # os.mkdir('prediction/')
