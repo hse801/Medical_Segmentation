@@ -74,7 +74,7 @@ def get_arguments():
     parser.add_argument('--model', type=str, default='UNET3D',
                         choices=('VNET', 'VNET2', 'UNET3D', 'DENSENET1', 'DENSENET2', 'DENSENET3', 'HYPERDENSENET',
                                  'SKIPDENSENET3D', 'COVIDNET1', 'COVIDNET2', 'RESNETMED3D', 'HIGHRESNET',
-                                 'TRANSBTS', 'RESNET3DVAE', 'DENSEVOXELNET'))
+                                 'TRANSBTS', 'RESNET3DVAE', 'DENSEVOXELNET', 'ATTENTIONUNET'))
     parser.add_argument('--opt', type=str, default='adam',
                         choices=('sgd', 'adam', 'rmsprop'))
     parser.add_argument('--lrscheduler', type=str, default='lambdalr',

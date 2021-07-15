@@ -13,10 +13,11 @@ from .Unet2D import Unet
 from .Unet3D import UNet3D
 from .Vnet import VNet, VNetLight
 from .TransBTS.TransBTS_downsample8x_skipconnection import TRANSBTS
+from .Attention_Networks.UNet_multi_att_3D import AttentionUNet
 
 model_list = ['UNET3D', 'DENSENET1', "UNET2D", 'DENSENET2', 'DENSENET3', 'HYPERDENSENET', "SKIPDENSENET3D",
               "DENSEVOXELNET", 'VNET', 'VNET2', "RESNET3DVAE", "RESNETMED3D", "COVIDNET1", "COVIDNET2", "CNN",
-              "HIGHRESNET", "TRANSBTS"]
+              "HIGHRESNET", "TRANSBTS", "ATTENTIONUNET"]
 
 
 def create_model(args):
@@ -36,6 +37,8 @@ def create_model(args):
         model = VNet(in_channels=in_channels, elu=False, classes=num_classes)
     elif model_name == 'UNET3D':
         model = UNet3D(in_channels=in_channels, n_classes=num_classes, base_n_filter=24)
+    elif model_name == 'ATTENTIONUNET':
+        model = AttentionUNet(n_classes=num_classes, in_channels=in_channels)
     elif model_name == 'TRANSBTS':
         model = TRANSBTS(_conv_repr=True, _pe_type="learned")
     elif model_name == 'DENSENET1':
