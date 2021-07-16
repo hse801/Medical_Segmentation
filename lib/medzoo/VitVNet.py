@@ -411,7 +411,7 @@ class RegistrationHead(nn.Sequential):
 
 
 class ViTVNet(nn.Module):
-    def __init__(self, config, img_size=(64, 256, 256), int_steps=7, vis=False):
+    def __init__(self, config, img_size=(64, 64, 64), int_steps=7, vis=False):
         super(ViTVNet, self).__init__()
         self.transformer = Transformer(config, img_size, vis)
         self.decoder = DecoderCup(config, img_size)

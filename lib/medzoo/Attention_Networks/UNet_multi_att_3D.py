@@ -99,7 +99,7 @@ class AttentionUNet(BaseModel):
         dsv3 = self.dsv3(up3)
         dsv2 = self.dsv2(up2)
         dsv1 = self.dsv1(up1)
-        final = self.final(torch.cat([dsv1,dsv2,dsv3,dsv4], dim=1))
+        final = self.final(torch.cat([dsv1, dsv2, dsv3, dsv4], dim=1))
 
         return final
 
@@ -109,6 +109,15 @@ class AttentionUNet(BaseModel):
         log_p = F.softmax(pred, dim=1)
 
         return log_p
+
+    # copied from 3D UNet
+    def test(self, device='cpu'):
+
+        input_tensor = torch.rand(1, 2, 32, 32, 32)
+        ideal_out = torch.rand(1, self.n_classes, 32, 32, 32)
+        out = self.forward(input_tensor)
+        assert ideal_out.shape == out.shape
+        # summary(self.to(torch.device(device)), (2, 32, 32, 32), device='cpu')
 
 
 class MultiAttentionBlock(nn.Module):

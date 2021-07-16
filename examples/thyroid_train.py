@@ -33,7 +33,7 @@ def main():
     if args.cuda:
         model = model.cuda()
         # print(model)
-        # torchsummary.summary(model, (1, 64, 64, 64))
+        torchsummary.summary(model, (1, 64, 64, 64))
         # net = torchvision.model()
         # print(net)
 
