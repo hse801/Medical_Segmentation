@@ -22,14 +22,14 @@ class BaseModel(nn.Module, ABC):
     def forward(self, x):
         pass
 
-    @abstractmethod
-    def test(self):
-        """
-        To be implemented by the subclass so that
-        models can perform a forward propagation
-        :return:
-        """
-        pass
+    # @abstractmethod
+    # def test(self):
+    #     """
+    #     To be implemented by the subclass so that
+    #     models can perform a forward propagation
+    #     :return:
+    #     """
+    #     pass
 
     @property
     def device(self):
