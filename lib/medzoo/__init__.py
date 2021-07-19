@@ -15,10 +15,12 @@ from .Vnet import VNet, VNetLight
 from .TransBTS.TransBTS_downsample8x_skipconnection import TRANSBTS
 from .Attention_Networks.UNet_multi_att_3D import AttentionUNet
 from .Unet3D_OG.Unet3D_og import Abstract3DUNet, UNet3DOG, ResidualUNet3D
+from .Unet3D_kidney.Unet3D_kidney import ResUNetKidney
+from .ConResNet import CONRESNET
 
 model_list = ['UNET3D', 'DENSENET1', "UNET2D", 'DENSENET2', 'DENSENET3', 'HYPERDENSENET', "SKIPDENSENET3D",
               "DENSEVOXELNET", 'VNET', 'VNET2', "RESNET3DVAE", "RESNETMED3D", "COVIDNET1", "COVIDNET2", "CNN",
-              "HIGHRESNET", "TRANSBTS", "ATTENTIONUNET", "UNET3DOG", "RESUNETOG"]
+              "HIGHRESNET", "TRANSBTS", "ATTENTIONUNET", "UNET3DOG", "RESUNETOG", "RESUNETKIDNEY", "CONRESNET"]
 
 
 def create_model(args):
@@ -44,8 +46,12 @@ def create_model(args):
         model = UNet3DOG(in_channels=1, out_channels=1)
     elif model_name == 'RESUNETOG':
         model = ResidualUNet3D(in_channels=1, out_channels=1)
+    elif model_name == 'RESUNETKIDNEY':
+        model = ResUNetKidney(in_channels=1, out_channels=1)
     elif model_name == 'TRANSBTS':
         model = TRANSBTS(_conv_repr=True, _pe_type="learned")
+    elif model_name == 'CONRESNET':
+        model = CONRESNET(num_classes=1)
     elif model_name == 'DENSENET1':
         model = SinglePathDenseNet(in_channels=in_channels, classes=num_classes)
     elif model_name == 'DENSENET2': # CHANNEL 2 OR 3

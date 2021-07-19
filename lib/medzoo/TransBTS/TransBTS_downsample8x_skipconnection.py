@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from lib.medzoo.TransBTS.Transformer import TransformerModel
-from lib.medzoo.TransBTS.PositionalEncoding import FixedPositionalEncoding,LearnedPositionalEncoding
+from lib.medzoo.TransBTS.PositionalEncoding import FixedPositionalEncoding, LearnedPositionalEncoding
 from lib.medzoo.TransBTS.Unet_skipconnection import Unet
 # from lib.medzoo.TransBTS.TransBTS_downsample8x_skipconnection import TRANSBTS
 
@@ -333,8 +333,8 @@ def TRANSBTS(_conv_repr=True, _pe_type="learned"):
         num_layers=2,
         # num_heads=8,
         # num_layers=4,
-        # hidden_dim=4096,
-        hidden_dim=128,
+        hidden_dim=4096,
+        # hidden_dim=128,
         dropout_rate=0.1,
         attn_dropout_rate=0.1,
         conv_patch_representation=_conv_repr,
@@ -351,7 +351,7 @@ if __name__ == '__main__':
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
         cuda0 = torch.device('cuda:0')
         x = torch.rand((1, 1, 128, 128, 128), device=cuda0)
-        _, model = TransBTS(_conv_repr=True, _pe_type="learned")
+        _, model = TRANSBTS(_conv_repr=True, _pe_type="learned")
         model.cuda()
         y = model(x)
         print(y.shape)
