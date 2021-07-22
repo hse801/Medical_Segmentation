@@ -10,6 +10,9 @@ import lib.train as train
 # Lib files
 import lib.utils as utils
 from lib.losses3D import DiceLoss
+from lib.losses3D import WeightedCrossEntropyLoss
+from lib.losses3D import PixelWiseCrossEntropyLoss
+from lib.losses3D import WeightedSmoothL1Loss
 
 import time
 
@@ -29,6 +32,8 @@ def main():
     #                                                                                            path='.././datasets')
     model, optimizer = medzoo.create_model(args)
     criterion = DiceLoss(classes=args.classes)
+    # criterion = WeightedSmoothL1Loss()
+    # criterion = PixelWiseCrossEntropyLoss()
 
     if args.cuda:
         model = model.cuda()
@@ -75,7 +80,7 @@ def get_arguments():
                         choices=('VNET', 'VNET2', 'UNET3D', 'DENSENET1', 'DENSENET2', 'DENSENET3', 'HYPERDENSENET',
                                  'SKIPDENSENET3D', 'COVIDNET1', 'COVIDNET2', 'RESNETMED3D', 'HIGHRESNET',
                                  'TRANSBTS', 'RESNET3DVAE', 'DENSEVOXELNET', 'ATTENTIONUNET', 'UNET3DOG', 'RESUNETOG',
-                                 'RESUNETKIDNEY', 'CONRESNET'))
+                                 'RESUNETKIDNEY', 'CONRESNET', 'DEEPMEDIC'))
     parser.add_argument('--opt', type=str, default='adam',
                         choices=('sgd', 'adam', 'rmsprop'))
     parser.add_argument('--lrscheduler', type=str, default='lambdalr',

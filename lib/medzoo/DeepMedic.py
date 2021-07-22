@@ -41,7 +41,7 @@ def repeat(x, n=3):
 
 
 class DeepMedic(nn.Module):
-    def __init__(self, c=4, n1=30, n2=40, n3=50, m=150, up=True):
+    def __init__(self, c=1, n1=30, n2=40, n3=50, m=150, up=True):
         super(DeepMedic, self).__init__()
         #n1, n2, n3 = 30, 40, 50
 

@@ -61,12 +61,15 @@ class Trainer:
             input_tensor.requires_grad = True
             output = self.model(input_tensor)
             loss_dice, per_ch_score = self.criterion(output, target)
+            # loss_dice = self.criterion(output, target)
             loss_dice.backward()
             self.optimizer.step()
             # self.lr_scheduler.step()
 
             self.writer.update_scores(batch_idx, loss_dice.item(), per_ch_score, 'train',
                                       epoch * self.len_epoch + batch_idx)
+            # self.writer.update_scores(batch_idx, loss_dice.item(), loss_dice.item(), 'train',
+            #                           epoch * self.len_epoch + batch_idx)
 
             if (batch_idx + 1) % self.terminal_show_freq == 0:
                 partial_epoch = epoch + batch_idx / self.len_epoch - 1
@@ -84,9 +87,12 @@ class Trainer:
 
                 output = self.model(input_tensor)
                 loss, per_ch_score = self.criterion(output, target)
+                # loss = self.criterion(output, target)
 
                 self.writer.update_scores(batch_idx, loss.item(), per_ch_score, 'val',
                                           epoch * self.len_epoch + batch_idx)
+                # self.writer.update_scores(batch_idx, loss.item(), loss.item(), 'val',
+                #                           epoch * self.len_epoch + batch_idx)
 
         self.writer.display_terminal(len(self.valid_data_loader), epoch, mode='val', summary=True)
 

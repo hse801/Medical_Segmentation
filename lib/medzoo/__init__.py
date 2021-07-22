@@ -17,10 +17,12 @@ from .Attention_Networks.UNet_multi_att_3D import AttentionUNet
 from .Unet3D_OG.Unet3D_og import Abstract3DUNet, UNet3DOG, ResidualUNet3D
 from .Unet3D_kidney.Unet3D_kidney import ResUNetKidney
 from .ConResNet import CONRESNET
+from .DeepMedic import DeepMedic
 
 model_list = ['UNET3D', 'DENSENET1', "UNET2D", 'DENSENET2', 'DENSENET3', 'HYPERDENSENET', "SKIPDENSENET3D",
               "DENSEVOXELNET", 'VNET', 'VNET2', "RESNET3DVAE", "RESNETMED3D", "COVIDNET1", "COVIDNET2", "CNN",
-              "HIGHRESNET", "TRANSBTS", "ATTENTIONUNET", "UNET3DOG", "RESUNETOG", "RESUNETKIDNEY", "CONRESNET"]
+              "HIGHRESNET", "TRANSBTS", "ATTENTIONUNET", "UNET3DOG", "RESUNETOG", "RESUNETKIDNEY", "CONRESNET",
+              "DEEPMEDIC"]
 
 
 def create_model(args):
@@ -52,6 +54,8 @@ def create_model(args):
         model = TRANSBTS(_conv_repr=True, _pe_type="learned")
     elif model_name == 'CONRESNET':
         model = CONRESNET(num_classes=1)
+    elif model_name == "DEEPMEDIC":
+        model = DeepMedic()
     elif model_name == 'DENSENET1':
         model = SinglePathDenseNet(in_channels=in_channels, classes=num_classes)
     elif model_name == 'DENSENET2': # CHANNEL 2 OR 3

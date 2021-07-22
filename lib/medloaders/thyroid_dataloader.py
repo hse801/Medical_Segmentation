@@ -7,11 +7,12 @@ from torch.autograd import Variable
 from torchvision import transforms, utils
 import lib.augment3D as augment3D
 import torchio as tio
+from skimage.transform import resize
 
 
 # Dataset
 class Thyroid_dataset(Dataset):
-    def __init__(self, ct_path, mask_path=None, test_flag=0, transform=None, left_path=None, right_path=None):
+    def __init__(self, ct_path, mask_path=None, test_flag=0, transform=None, left_path=None, right_path=None, ConResNet=False):
 
         self.ct_path = ct_path
         self.mask_path = mask_path
@@ -19,6 +20,7 @@ class Thyroid_dataset(Dataset):
         self.transform = transform
         self.left_path = left_path
         self.right_path = right_path
+        self.ConResNet = ConResNet
 
     def __getitem__(self, idx):
 
@@ -40,6 +42,25 @@ class Thyroid_dataset(Dataset):
             img_mask = sitk.ReadImage(img_mask_path)
             img_mask_data = sitk.GetArrayFromImage(img_mask)
             img_mask_data[img_mask_data > 0] = 1
+
+            # For ConResNet
+            # img -> res
+            ct_size = np.shape(img_ct_data)[0]
+            # print(f'bf img_ct_data shape = {np.shape(img_ct_data)}')
+            # img_ct_data = np.reshape(img_ct_data, (1, ct_size, ct_size, ct_size))
+            # print(f'af img_ct_data shape = {np.shape(img_ct_data)}')
+            ct_copy = np.zeros((ct_size, ct_size, ct_size)).astype(np.float32)
+            # print(f'ct_copy shape = {np.shape(ct_copy)}')
+            ct_copy[1:, :, :] = img_ct_data[0: ct_size - 1, :, :]
+            ct_res = img_ct_data - ct_copy
+            ct_res[0, :, :] = 0
+
+            # label -> res
+            # img_mask_data = np.reshape(img_mask_data, (1, ct_size, ct_size, ct_size))
+            mask_copy = np.zeros((ct_size, ct_size, ct_size)).astype(np.float32)
+            mask_copy[1:, :, :] = img_mask_data[0: ct_size - 1, :, :]
+            mask_res = img_mask_data - mask_copy
+
 
             # print(f'mask path for training = {img_mask_path}')
 
@@ -87,6 +108,22 @@ class Thyroid_dataset(Dataset):
             img_mask_data = sitk.GetArrayFromImage(img_mask)
             img_mask_data[img_mask_data > 0] = 1
 
+            # For ConResNet
+            # img -> res
+            # ct_size = np.shape(img_ct_data)[0]
+            # # img_ct_data = np.reshape(img_ct_data, (1, ct_size, ct_size, ct_size))
+            # ct_size = img_ct_data[0].size()
+            # ct_copy = np.zeros((ct_size, ct_size, ct_size)).astype(np.float32)
+            # ct_copy[1:, :, :] = img_ct_data[0: ct_size - 1, :, :]
+            # ct_res = img_ct_data - ct_copy
+            # ct_res[0, :, :] = 0
+
+            # if self.ConResNet:
+            #     return img_ct_data.copy(), ct_res.copy(), img_mask_data.copy()
+
+
+
+
             # print(f'mask path for validation = {img_mask_path}')
             # print(f'before  reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
             # img_mask_data = img_mask_data.reshape(1, -1, 128, 160)
@@ -116,7 +153,7 @@ class Thyroid_dataset(Dataset):
 
             # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
             return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
-
+            # return torch.FloatTensor(img_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
         # print(f'ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # print(f'ct max = {np.max(img_ct_data)}, mask max = {np.max(img_mask_data)}')
         # return img_ct_data, img_mask_data
@@ -133,6 +170,7 @@ class Thyroid_dataset(Dataset):
         # print(f'bf ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
 
         [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
+
         # [img_ct_data], mask_combined = self.transform([img_ct_data], mask_combined)
 
         # print(f'af ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
@@ -145,7 +183,11 @@ class Thyroid_dataset(Dataset):
         # print(f'torch.FloatTensor(img_ct_data.copy()) = {torch.FloatTensor(img_ct_data.copy()).unsqueeze(0).size()}')
 
         # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
+        # if self.ConResNet:
+        #     return img_ct_data.copy(), ct_res.copy(), img_mask_data.copy(), mask_res.copy()
+
         return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+        # return torch.FloatTensor(img_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 
     def __len__(self):
         return len(self.ct_path)
@@ -177,11 +219,16 @@ train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368
 val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1)
 # pred_ds = Thyroid_dataset(crop_ct_path[0:368], right_mask_path[0:368], test_flag=1)
 
+res_train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368], test_flag=0, ConResNet=True)
+res_val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1, ConResNet=True)
+
 
 def generate_thyroid_dataset():
 
     train_loader = DataLoader(train_ds, batch_size=2, num_workers=4)
     val_loader = DataLoader(val_ds, batch_size=2, num_workers=4)
+    # train_loader = DataLoader(res_train_ds, batch_size=2, num_workers=4)
+    # val_loader = DataLoader(res_val_ds, batch_size=2, num_workers=4)
     pred_loader = DataLoader(pred_ds, batch_size=1, num_workers=0)
 
     return train_loader, val_loader, pred_loader

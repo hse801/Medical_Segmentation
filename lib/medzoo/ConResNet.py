@@ -168,7 +168,7 @@ class conresnet(nn.Module):
 
         self.conv_4_32 = nn.Sequential(
             # input channel to 1
-            conv3x3x3(1, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), weight_std=self.weight_std))
+            conv3x3x3(4, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), weight_std=self.weight_std))
 
         self.conv_32_64 = nn.Sequential(
             nn.GroupNorm(8, 32),
