@@ -1,3 +1,5 @@
+# https://github.com/ozan-oktay/Attention-Gated-Networks
+
 import torch.nn as nn
 import torch
 from .utils import UnetConv3, UnetUp3_CT, UnetGridGatingSignal3, UnetDsv3

@@ -379,8 +379,6 @@ class residualBottleneck(nn.Module):
         return out
 
 
-
-
 class SeqModelFeatureExtractor(nn.Module):
     def __init__(self, submodule, extracted_layers):
         super(SeqModelFeatureExtractor, self).__init__()

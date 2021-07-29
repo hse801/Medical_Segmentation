@@ -101,16 +101,16 @@ class TensorboardWriter():
 
         dice_coeff = np.mean(channel_score) * 100
 
-        # num_channels = len(channel_score)
-        num_channels = 1
+        num_channels = len(channel_score)
+        # num_channels = 1
         self.data[mode]['dsc'] += dice_coeff
         self.data[mode]['loss'] += loss
         self.data[mode]['count'] = iter + 1
 
-        # for i in range(num_channels):
-        #     self.data[mode][self.label_names[i]] += channel_score[i]
-        #     if self.writer is not None:
-        #         self.writer.add_scalar(mode + '/' + self.label_names[i], channel_score[i], global_step=writer_step)
+        for i in range(num_channels):
+            self.data[mode][self.label_names[i]] += channel_score[i]
+            if self.writer is not None:
+                self.writer.add_scalar(mode + '/' + self.label_names[i], channel_score[i], global_step=writer_step)
 
     def write_end_of_epoch(self, epoch):
 
