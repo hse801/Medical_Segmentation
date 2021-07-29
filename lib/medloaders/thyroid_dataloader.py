@@ -12,7 +12,8 @@ from skimage.transform import resize
 
 # Dataset
 class Thyroid_dataset(Dataset):
-    def __init__(self, ct_path, mask_path=None, test_flag=0, transform=None, left_path=None, right_path=None, ConResNet=False):
+    def __init__(self, ct_path, mask_path=None, test_flag=0, transform=None, left_path=None, right_path=None,
+                 ConResNet=False, lr_flip=False):
 
         self.ct_path = ct_path
         self.mask_path = mask_path
@@ -21,6 +22,7 @@ class Thyroid_dataset(Dataset):
         self.left_path = left_path
         self.right_path = right_path
         self.ConResNet = ConResNet
+        self.lr_flip = lr_flip
 
     def __getitem__(self, idx):
 
@@ -40,6 +42,10 @@ class Thyroid_dataset(Dataset):
         img_mask = sitk.ReadImage(img_mask_path)
         img_mask_data = sitk.GetArrayFromImage(img_mask)
         img_mask_data[img_mask_data > 0] = 1
+
+        # if self.lr_flip:
+        #     img_ct_data = img_ct_data[:, ::-1, :]
+        #     img_mask_data = img_mask_data[:, ::-1, :]
 
         # For ConResNet
         # img -> res
@@ -89,6 +95,10 @@ class Thyroid_dataset(Dataset):
         # torch.FloatTensor(img_mask_data.copy()).unsqueeze(0) size = torch.Size([1, 128, 128, 128])
 
         if self.test_flag == 1:
+            if self.lr_flip:
+                img_ct_data = img_ct_data[:, ::-1, :]
+                img_mask_data = img_mask_data[:, ::-1, :]
+
             return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
 
         # else:
@@ -215,7 +225,7 @@ right_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_right.nii.gz')
 # train_ds = Thyroid_dataset(crop_ct_path[60:368], test_flag=0, left_path=left_mask_path[60:368], right_path=right_mask_path[60:368])
 # val_ds = Thyroid_dataset(crop_ct_path[0:60], test_flag=1, left_path=left_mask_path[0:60], right_path=right_mask_path[0:60])
 # pred_ds = Thyroid_dataset(crop_ct_path[0:101], test_flag=1, left_path=left_mask_path[0:101], right_path=right_mask_path[0:101])
-pred_ds = Thyroid_dataset(crop_ct_path[0:368], mask_path=crop_mask_path[0:368], test_flag=1)
+# pred_ds = Thyroid_dataset(crop_ct_path[0:368], mask_path=crop_mask_path[0:368], test_flag=1)
 # train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368], test_flag=0)
 # val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1)
 # pred_ds = Thyroid_dataset(crop_ct_path[0:368], right_mask_path[0:368], test_flag=1)
@@ -226,6 +236,9 @@ pred_ds = Thyroid_dataset(crop_ct_path[0:368], mask_path=crop_mask_path[0:368], 
 # right mask
 train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=right_mask_path[60:368], test_flag=0)
 val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=right_mask_path[0:60], test_flag=1)
+
+# pred_ds = Thyroid_dataset(crop_ct_path[0:101], mask_path=right_mask_path[0:101], test_flag=1)
+pred_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=left_mask_path[0:60], test_flag=1, lr_flip=True)
 
 res_train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368], test_flag=0, ConResNet=True)
 res_val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1, ConResNet=True)
