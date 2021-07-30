@@ -12,7 +12,11 @@ img_ct = sitk.ReadImage(img_ct_path)
 # print(f'ct path for training = {img_ct_path}')
 img_ct_data = sitk.GetArrayFromImage(img_ct)
 img_ct_data = (img_ct_data - np.mean(img_ct_data)) / (np.std(img_ct_data) + 1e-8)
-flip_ct_data = img_ct_data[:, ::-1, :]
+
+flip_ct_data = img_ct_data[:, :, ::-1]
+print(f'bf flip ct data shape = {np.shape(flip_ct_data)}')
+# flip_ct_data = np.squeeze(flip_ct_data)
+# print(f'af flip ct data shape = {np.shape(flip_ct_data)}')
 os.chdir(path)
 flip_ct_img = sitk.GetImageFromArray(flip_ct_data)
 sitk.WriteImage(flip_ct_img[:, :, :], 'flip_ct.nii.gz')
@@ -33,10 +37,15 @@ print(f'file saved in {os.getcwd()}')
 # print(f'file saved in {os.getcwd()}')
 #
 #
-# mask_file = path + 'crop_mask.nii.gz'
-# print(f'mask file = {mask_file}')
-# mask_img = sitk.ReadImage(mask_file)
-# img_mask_data = sitk.GetArrayFromImage(mask_img)
+mask_file = path + 'crop_mask.nii.gz'
+print(f'mask file = {mask_file}')
+mask_img = sitk.ReadImage(mask_file)
+img_mask_data = sitk.GetArrayFromImage(mask_img)
+flip_mask_data = img_mask_data[:, :, ::-1]
+
+flip_mask_img = sitk.GetImageFromArray(flip_mask_data)
+sitk.WriteImage(flip_mask_img[:, :, :], 'flip_mask.nii.gz')
+
 #
 # # label -> res
 # # img_mask_data = np.reshape(img_mask_data, (1, ct_size, ct_size, ct_size))

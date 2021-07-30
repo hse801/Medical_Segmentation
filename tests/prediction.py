@@ -57,7 +57,7 @@ def predictor(PATH, data_loader):
             # print(f'af output size = {output.size()}')
             output_arr = output.cpu().numpy()
             # print(f'output_arr type = {type(output_arr)}, output_arr size = {np.shape(output_arr)}')
-            print(f'output_arr min = {np.min(output_arr)}, output_arr max = {np.max(output_arr)}')
+            # print(f'output_arr min = {np.min(output_arr)}, output_arr max = {np.max(output_arr)}')
             file_name = f'pred_11_00_07_29_{batch_idx}.nii.gz'
 
             # os.chdir('E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/UNET3D_17_08___07_06_thyroid_/prediction/')
