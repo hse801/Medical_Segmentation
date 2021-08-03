@@ -43,15 +43,11 @@ class Thyroid_dataset(Dataset):
         img_mask_data = sitk.GetArrayFromImage(img_mask)
         img_mask_data[img_mask_data > 0] = 1
         mask_file_name = img_mask_path.split("\\")[2]
-        print(f'img_mask_path = {img_mask_path}')
-        print(f'mask_file_name = {mask_file_name}')
+        # print(f'img_mask_path = {img_mask_path}')
+        # print(f'mask_file_name = {mask_file_name}')
 
-        # flip the left ct and mask
-        if self.lr_flip:
-            if mask_file_name == 'crop_mask_left.nii.gz':
-                # print('train data flip')
-                img_ct_data = img_ct_data[:, ::-1, :]
-                img_mask_data = img_mask_data[:, ::-1, :]
+        if img_mask_path.split("\\")[1] != img_ct_path.split("\\")[1]:
+            print('Different file path !!')
 
         # For ConResNet
         # img -> res
@@ -99,6 +95,14 @@ class Thyroid_dataset(Dataset):
         # print(f'torch.FloatTensor(img_ct_data.copy()).unsqueeze(0) size = {torch.FloatTensor(img_ct_data.copy()).unsqueeze(0).size()}')
         # print(f'torch.FloatTensor(img_mask_data.copy()).unsqueeze(0) size = {torch.FloatTensor(img_mask_data.copy()).unsqueeze(0).size()}')
         # torch.FloatTensor(img_mask_data.copy()).unsqueeze(0) size = torch.Size([1, 128, 128, 128])
+
+        # flip the left ct and mask
+        if self.test_flag == 0:
+            if self.lr_flip:
+                if mask_file_name == 'crop_mask_left.nii.gz':
+                    # print('train data flip')
+                    img_ct_data = img_ct_data[:, :, ::-1]
+                    img_mask_data = img_mask_data[:, :, ::-1]
 
         if self.test_flag == 1:
             if self.lr_flip:
@@ -188,7 +192,7 @@ class Thyroid_dataset(Dataset):
         # print(f'bf ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
 
         [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
-
+        # print('data transformed')
         # [img_ct_data], mask_combined = self.transform([img_ct_data], mask_combined)
 
         # print(f'af ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')

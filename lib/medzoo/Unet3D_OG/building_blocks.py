@@ -284,6 +284,18 @@ class Decoder(nn.Module):
                                          padding=padding)
 
     def forward(self, encoder_features, x):
+        """
+        :param encoder_features:
+        :param x:
+        :return:
+        encoder_features size = torch.Size([2, 512, 8, 8, 8]), x size = torch.Size([2, 1024, 4, 4, 4])
+        encoder_features size = torch.Size([2, 256, 16, 16, 16]), x size = torch.Size([2, 512, 8, 8, 8])
+        encoder_features size = torch.Size([2, 128, 32, 32, 32]), x size = torch.Size([2, 256, 16, 16, 16])
+        encoder_features size = torch.Size([2, 64, 64, 64, 64]), x size = torch.Size([2, 128, 32, 32, 32])
+        type of encoder_features, x : <class 'torch.Tensor'>
+        """
+        print(f'1 encoder_features size = {encoder_features.size()}, x size = {x.size()}')
+
         x = self.upsampling(encoder_features=encoder_features, x=x)
         x = self.joining(encoder_features, x)
         x = self.basic_module(x)
