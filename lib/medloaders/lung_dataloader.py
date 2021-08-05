@@ -38,6 +38,8 @@ class Lung_dataset(Dataset):
         img_pet_data = (img_pet_data - np.mean(img_pet_data)) / (np.std(img_pet_data) + 1e-8)
         # img_pet_data = img_pet_data.reshape(1, -1, 128, 160)
 
+        pet_ct_data = np.stack((img_ct_data, img_pet_data), axis=0)
+
         folder_path = self.folder_path[idx]
         primary_path = folder_path + 'ROI_cut.nii.gz'
         lymph_path = folder_path + 'lymph_cut_sum.nii.gz'
@@ -46,16 +48,21 @@ class Lung_dataset(Dataset):
             img_primary = sitk.ReadImage(primary_path)
             img_primary_data = sitk.GetArrayFromImage(img_primary)
             # img_primary_data = img_primary_data.reshape(1, -1, 128, 160)
+        else:
+            img_primary_data = np.zeros((80, 128, 160))
 
         if os.path.isfile(lymph_path):
             img_lymph = sitk.ReadImage(lymph_path)
             img_lymph_data = sitk.GetArrayFromImage(img_lymph)
             # img_lymph_data = img_lymph_data.reshape(1, -1, 128, 160)
-
+        else:
+            img_lymph_data = np.zeros((80, 128, 160))
+        # print(f'img_ct_data = {img_ct_data.shape}, img_pet_data = {img_pet_data.shape}')
+        # print(f'img_primary_data = {img_primary_data.shape}, img_lymph_data = {img_lymph_data.shape}')
         img_mask_data = np.stack((img_primary_data, img_lymph_data), axis=0)
 
         if self.test_flag == 1:
-            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+            return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 
         # else:
         #     img_ct_path = self.ct_path[idx]
@@ -130,9 +137,10 @@ class Lung_dataset(Dataset):
                         augment3D.RandomShift(), augment3D.RandomZoom()
                         ], p=0.8)
 
-        [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
+        [pet_ct_data], img_mask_data = self.transform([pet_ct_data], img_mask_data)
+        # [img_ct_data, img_pet_data], img_mask_data = self.transform([img_ct_data, img_pet_data], img_mask_data)
 
-        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+        return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 
     def __len__(self):
         return len(self.ct_path)

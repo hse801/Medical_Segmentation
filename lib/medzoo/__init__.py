@@ -41,7 +41,7 @@ def create_model(args):
     elif model_name == 'VNET':
         model = VNet(in_channels=in_channels, elu=False, classes=num_classes)
     elif model_name == 'UNET3D':
-        model = UNet3D(in_channels=in_channels, n_classes=num_classes, base_n_filter=24)
+        model = UNet3D(in_channels=in_channels, n_classes=num_classes, base_n_filter=12)
     elif model_name == 'ATTENTIONUNET':
         model = AttentionUNet(n_classes=num_classes, in_channels=in_channels)
     elif model_name == 'UNET3DOG':

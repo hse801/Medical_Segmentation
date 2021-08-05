@@ -12,6 +12,7 @@ from .ixi_t1_t2 import IXIMRIdataset
 from .miccai_2019_pathology import MICCAI2019_gleason_pathology
 from .mrbrains2018 import MRIDatasetMRBRAINS2018
 from .thyroid_dataloader import generate_thyroid_dataset
+from .lung_dataloader import generate_lung_dataset
 
 
 def generate_datasets(args, path='.././datasets'):
