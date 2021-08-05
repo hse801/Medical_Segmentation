@@ -14,7 +14,9 @@ use nibabel library to save affine information together
 (voxel size, origin)
 """
 
-folder_path = glob.glob('E:/HSE/LungCancerData/train/*/')
+folder_path = glob.glob('E:/HSE/LungCancerData/test/*/')
+
+# With Nibabel
 for i in folder_path:
     lymph_path = glob.glob(i + '*lymph_cut.nii.gz')
     # sample_img = nb.load(lymph_path[0])
@@ -25,7 +27,6 @@ for i in folder_path:
         lymph_img = nb.load(l)
         lymph_affine = lymph_img.affine
         # print(f'lymph_affine = {lymph_affine}')
-        # lymph_img = lymph_img[::-1, :, :]
         lymph_data = lymph_img.get_fdata()
         # print(f'type sum_lymph = {sum_lymph.shape}, type lymph_img = {lymph_img.shape}')
         # type sum_lymph = (160, 128, 80), type lymph_img = (160, 128, 80)
@@ -41,6 +42,7 @@ for i in folder_path:
         print(f'No lymph node in {os.getcwd()}')
     # break
 
+# WIth SimpleITK
 # for i in folder_path:
 #     lymph_path = glob.glob(i + '*lymph_cut.nii.gz')
 #     zero_arr = np.zeros((80, 128, 160))
