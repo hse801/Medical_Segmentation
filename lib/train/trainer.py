@@ -59,6 +59,7 @@ class Trainer:
 
             input_tensor, target = prepare_input(input_tuple=input_tuple, args=self.args)
             input_tensor.requires_grad = True
+            # print(f'trainer.py: input_tensor size = {input_tensor.size()}')
             output = self.model(input_tensor)
             loss_dice, per_ch_score = self.criterion(output, target)
             # loss_dice = self.criterion(output, target)

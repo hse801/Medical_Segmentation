@@ -294,7 +294,7 @@ class Decoder(nn.Module):
         encoder_features size = torch.Size([2, 64, 64, 64, 64]), x size = torch.Size([2, 128, 32, 32, 32])
         type of encoder_features, x : <class 'torch.Tensor'>
         """
-        print(f'1 encoder_features size = {encoder_features.size()}, x size = {x.size()}')
+        # print(f'1 encoder_features size = {encoder_features.size()}, x size = {x.size()}')
 
         x = self.upsampling(encoder_features=encoder_features, x=x)
         x = self.joining(encoder_features, x)

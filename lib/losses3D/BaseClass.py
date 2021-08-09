@@ -3,6 +3,8 @@ from torch import nn as nn
 
 from lib.losses3D.basic import expand_as_one_hot
 import os
+from .pixel_wise_cross_entropy import PixelWiseCrossEntropyLoss
+
 os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -65,6 +67,7 @@ class _AbstractDiceLoss(nn.Module):
         # compute per channel Dice coefficient
         per_channel_dice = self.dice(input, target, weight=self.weight)
 
+        # loss = PixelWiseCrossEntropyLoss(class_weights=torch.tensor([0.1, 1, 1, 1]).cuda(), ignore_index=-100)
         loss = (1. - torch.mean(per_channel_dice))
         per_channel_dice = per_channel_dice.detach().cpu().numpy()
 

@@ -75,8 +75,9 @@ def prepare_input(input_tuple, inModalities=-1, inChannels=-1, cuda=False, args=
     elif modalities == 2:
         if channels == 2:
             img_t1, img_t2, target = input_tuple
-
+            # print(f'general.py: input tuple = {len(input_tuple)}, img t1 = {img_t1.shape}, img t2 = {img_t2.shape}, target = {target.shape}')
             input_tensor = torch.cat((img_t1, img_t2), dim=1)
+            # print(f'general.py: input_tensor size = {input_tensor.size()}')
 
         elif channels == 1:
             input_tensor, _, target = input_tuple

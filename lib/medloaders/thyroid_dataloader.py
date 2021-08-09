@@ -43,7 +43,7 @@ class Thyroid_dataset(Dataset):
         img_mask_data = sitk.GetArrayFromImage(img_mask)
         img_mask_data[img_mask_data > 0] = 1
         mask_file_name = img_mask_path.split("\\")[2]
-        # print(f'img_mask_path = {img_mask_path}')
+        # print(f'ct path for training = {img_ct_path}, img_mask_path = {img_mask_path}')
         # print(f'mask_file_name = {mask_file_name}')
 
         if img_mask_path.split("\\")[1] != img_ct_path.split("\\")[1]:
@@ -207,7 +207,7 @@ class Thyroid_dataset(Dataset):
         # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
         # if self.ConResNet:
         #     return img_ct_data.copy(), ct_res.copy(), img_mask_data.copy(), mask_res.copy()
-
+        # print(f'ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
         # return torch.FloatTensor(img_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 

@@ -59,10 +59,16 @@ class Lung_dataset(Dataset):
             img_lymph_data = np.zeros((80, 128, 160))
         # print(f'img_ct_data = {img_ct_data.shape}, img_pet_data = {img_pet_data.shape}')
         # print(f'img_primary_data = {img_primary_data.shape}, img_lymph_data = {img_lymph_data.shape}')
+
         img_mask_data = np.stack((img_primary_data, img_lymph_data), axis=0)
 
+        # sum lymph and primary
+        # img_mask_data = img_primary_data + img_lymph_data
+
         if self.test_flag == 1:
-            return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
+            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
+                   torch.FloatTensor(img_mask_data.copy())
+            # return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 
         # else:
         #     img_ct_path = self.ct_path[idx]
@@ -133,14 +139,19 @@ class Lung_dataset(Dataset):
 
         # if self.augmentation:
         self.transform = augment3D.RandomChoice(
-            transforms=[augment3D.GaussianNoise(mean=0, std=0.01), augment3D.RandomRotation(),
+            transforms=[augment3D.RandomRotation(),
                         augment3D.RandomShift(), augment3D.RandomZoom()
-                        ], p=0.8)
+                        ], p=0.4)
+        # augment3D.GaussianNoise(mean=0, std=0.01),
+        # [pet_ct_data], img_mask_data = self.transform([pet_ct_data], img_mask_data)
 
-        [pet_ct_data], img_mask_data = self.transform([pet_ct_data], img_mask_data)
+        # Apply transform
         # [img_ct_data, img_pet_data], img_mask_data = self.transform([img_ct_data, img_pet_data], img_mask_data)
 
-        return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
+        # pet_ct_data = np.stack((img_ct_data, img_pet_data), axis=0)
+
+        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
+               torch.FloatTensor(img_mask_data.copy())
 
     def __len__(self):
         return len(self.ct_path)
@@ -149,15 +160,18 @@ class Lung_dataset(Dataset):
 """Loading DATA"""
 
 # 128x128x128
-ct_path = glob.glob('E:/HSE/LungCancerData/train/*/CT_cut.nii.gz')
-pet_path = glob.glob('E:/HSE/LungCancerData/train/*/PET_cut.nii.gz')
+train_ct_path = glob.glob('E:/HSE/LungCancerData/train/*/CT_cut.nii.gz')
+train_pet_path = glob.glob('E:/HSE/LungCancerData/train/*/PET_cut.nii.gz')
 # primary_path = glob.glob('E:/HSE/LungCancerData/train/*/ROI_cut.nii.gz')
-folder_path = glob.glob('E:/HSE/LungCancerData/train/*/')
+valid_ct_path = glob.glob('E:/HSE/LungCancerData/valid/*/CT_cut.nii.gz')
+valid_pet_path = glob.glob('E:/HSE/LungCancerData/valid/*/PET_cut.nii.gz')
+train_folder_path = glob.glob('E:/HSE/LungCancerData/train/*/')
+valid_folder_path = glob.glob('E:/HSE/LungCancerData/valid/*/')
 
 
-train_ds = Lung_dataset(ct_path[60:368], pet_path[60:368], folder_path[60:368], test_flag=0)
-val_ds = Lung_dataset(ct_path[0:60], pet_path[0:60], folder_path[0:60], test_flag=1)
-pred_ds = Lung_dataset(ct_path[0:60], pet_path[0:60], folder_path[0:60], test_flag=1)
+train_ds = Lung_dataset(train_ct_path[0:780], train_pet_path[0:780], train_folder_path[0:780], test_flag=0)
+val_ds = Lung_dataset(valid_ct_path[0:70], valid_pet_path[0:70], valid_folder_path[0:70], test_flag=1)
+pred_ds = Lung_dataset(valid_ct_path[0:60], valid_pet_path[0:60], valid_folder_path[0:60], test_flag=1)
 
 
 def generate_lung_dataset():

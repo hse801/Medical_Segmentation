@@ -4,7 +4,8 @@ from lib.losses3D.basic import *
 
 
 class DiceLoss(_AbstractDiceLoss):
-    """Computes Dice Loss according to https://arxiv.org/abs/1606.04797.
+    """
+    Computes Dice Loss according to https://arxiv.org/abs/1606.04797.
     For multi-class segmentation `weight` parameter can be used to assign different weights per class.
     """
 
