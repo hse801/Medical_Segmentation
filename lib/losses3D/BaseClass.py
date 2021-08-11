@@ -50,7 +50,8 @@ class _AbstractDiceLoss(nn.Module):
         # print(f'Baseclass.py: target size bf = {target.size()}')
         target = expand_as_one_hot(target.long(), self.classes)
         # print(f'Baseclass.py: target size af = {target.size()}')
-
+        # print(f'Baseclass.py: input = {input}, target= {target}')
+        # print(f'Baseclass.py: input dim = {len(input)}, target.dim = {len(target)}')
         # print(f'Baseclass.py: input dim = {input.dim()}, target.dim = {target.dim()}')
         assert input.dim() == target.dim() == 5, "'input' and 'target' have different number of dims"
 

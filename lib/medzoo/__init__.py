@@ -46,6 +46,8 @@ def create_model(args):
         model = AttentionUNet(n_classes=num_classes, in_channels=in_channels)
     elif model_name == 'UNET3DOG':
         model = UNet3DOG(in_channels=1, out_channels=1)
+    elif model_name == 'RESUNETOG': # ResUnet for thyroid
+        model = ResidualUNet3D(in_channels=1, out_channels=1)
     elif model_name == 'RESUNETOGT': # ResUnet for thyroid
         model = ResidualUNet3D(in_channels=1, out_channels=1)
     elif model_name == 'RESUNETOGL': # ResUnet for lungcancer
