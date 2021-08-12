@@ -110,8 +110,8 @@ class Lung_dataset(Dataset):
         #
         #     # for 2 channel output
         #     # img_left_path = self.left_path[idx]
-        #     # img_left = sitk.ReadImage(img_left_path)
-        #     # img_left_data = sitk.GetArrayFromImage(img_left)
+        #     # img_gt = sitk.ReadImage(img_left_path)
+        #     # img_left_data = sitk.GetArrayFromImage(img_gt)
         #     #
         #     # img_right_path = self.right_path[idx]
         #     # img_right = sitk.ReadImage(img_right_path)

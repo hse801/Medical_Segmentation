@@ -74,8 +74,8 @@ class Thyroid_dataset(Dataset):
 
         # for 2 channel output
         # img_left_path = self.left_path[idx]
-        # img_left = sitk.ReadImage(img_left_path)
-        # img_left_data = sitk.GetArrayFromImage(img_left)
+        # img_gt = sitk.ReadImage(img_left_path)
+        # img_left_data = sitk.GetArrayFromImage(img_gt)
         #
         # img_right_path = self.right_path[idx]
         # img_right = sitk.ReadImage(img_right_path)
@@ -153,8 +153,8 @@ class Thyroid_dataset(Dataset):
         #
         #     # for 2 channel output
         #     # img_left_path = self.left_path[idx]
-        #     # img_left = sitk.ReadImage(img_left_path)
-        #     # img_left_data = sitk.GetArrayFromImage(img_left)
+        #     # img_gt = sitk.ReadImage(img_left_path)
+        #     # img_left_data = sitk.GetArrayFromImage(img_gt)
         #     #
         #     # img_right_path = self.right_path[idx]
         #     # img_right = sitk.ReadImage(img_right_path)
@@ -255,8 +255,8 @@ val_ds = Thyroid_dataset(crop_ct_path[0:60]+crop_ct_path[0:60], mask_path=left_m
 # train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368], test_flag=0)
 # val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1)
 
-# pred_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=left_mask_path[0:60], test_flag=1)
-pred_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=right_mask_path[0:60], test_flag=1, lr_flip=True)
+pred_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=left_mask_path[0:60], test_flag=1)
+# pred_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=right_mask_path[0:60], test_flag=1, lr_flip=True)
 
 res_train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368], test_flag=0, ConResNet=True)
 res_val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1, ConResNet=True)

@@ -4,7 +4,7 @@ import glob
 
 # folder_path = glob.glob('E:/HSE/Thyroid/Dicom/*/test*.nii.gz')
 # folder_path = glob.glob('E:/HSE/LungCancerData/train/*/lymph_cut_sum.nii.gz')
-folder_path = glob.glob('E:/HSE/Thyroid/Dicom/*/pred_16_15_08_10_*')
+folder_path = glob.glob('E:/HSE/Thyroid/Dicom/*/pred_11_00_07_29*')
 count = 0
 
 for i in folder_path:

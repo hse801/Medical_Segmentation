@@ -131,7 +131,6 @@ class _GridAttentionBlockND(nn.Module):
 
         return W_y, sigm_psi_f
 
-
     def _concatenation_residual(self, x, g):
         input_size = x.size()
         batch_size = input_size[0]
