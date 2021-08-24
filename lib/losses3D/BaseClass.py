@@ -69,6 +69,8 @@ class _AbstractDiceLoss(nn.Module):
         per_channel_dice = self.dice(input, target, weight=self.weight)
 
         # loss = PixelWiseCrossEntropyLoss(class_weights=torch.tensor([0.1, 1, 1, 1]).cuda(), ignore_index=-100)
+        # L = nn.MSELoss()
+        # loss = L(input, target)
         loss = (1. - torch.mean(per_channel_dice))
         per_channel_dice = per_channel_dice.detach().cpu().numpy()
 

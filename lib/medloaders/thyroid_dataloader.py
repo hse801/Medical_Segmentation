@@ -143,9 +143,6 @@ class Thyroid_dataset(Dataset):
         #     # if self.ConResNet:
         #     #     return img_ct_data.copy(), ct_res.copy(), img_mask_data.copy()
         #
-        #
-        #
-        #
         #     # print(f'mask path for validation = {img_mask_path}')
         #     # print(f'before  reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         #     # img_mask_data = img_mask_data.reshape(1, -1, 128, 160)
@@ -249,11 +246,11 @@ right_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_right.nii.gz')
 # train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=right_mask_path[60:368], test_flag=0)
 # val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=right_mask_path[0:60], test_flag=1)
 
-train_ds = Thyroid_dataset(crop_ct_path[60:368]+crop_ct_path[60:368], mask_path=left_mask_path[60:368]+right_mask_path[60:368], test_flag=0, lr_flip=True)
-val_ds = Thyroid_dataset(crop_ct_path[0:60]+crop_ct_path[0:60], mask_path=left_mask_path[0:60]+right_mask_path[0:60], test_flag=1, lr_flip=True)
+# train_ds = Thyroid_dataset(crop_ct_path[60:368]+crop_ct_path[60:368], mask_path=left_mask_path[60:368]+right_mask_path[60:368], test_flag=0, lr_flip=True)
+# val_ds = Thyroid_dataset(crop_ct_path[0:60]+crop_ct_path[0:60], mask_path=left_mask_path[0:60]+right_mask_path[0:60], test_flag=1, lr_flip=True)
 
-# train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368], test_flag=0)
-# val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1)
+train_ds = Thyroid_dataset(crop_ct_path[60:368], mask_path=crop_mask_path[60:368], test_flag=0)
+val_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=crop_mask_path[0:60], test_flag=1)
 
 pred_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=left_mask_path[0:60], test_flag=1)
 # pred_ds = Thyroid_dataset(crop_ct_path[0:60], mask_path=right_mask_path[0:60], test_flag=1, lr_flip=True)

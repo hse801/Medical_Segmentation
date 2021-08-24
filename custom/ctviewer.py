@@ -10,7 +10,7 @@ for i in range(256):
         return min(max(0, int(x)), 255)
 
     # matlab jet colortable https://stackoverflow.com/questions/58666021/how-can-i-apply-a-colortable-to-my-grayscale-8-bit-image-and-convert-it-correctl
-    r = -4.0 * abs(i - 255.0 * 3.0 / 4) + 255.0 * 3.0/ 2
+    r = -4.0 * abs(i - 255.0 * 3.0 / 4) + 255.0 * 3.0 / 2
     g = -4.0 * abs(i - 255.0 * 2.0 / 4) + 255.0 * 3.0 / 2
     b = -4.0 * abs(i - 255.0 * 1.0 / 4) + 255.0 * 3.0 / 2
     COLORTABLE.append(QtGui.qRgb(crop(r), crop(g), crop(b)))

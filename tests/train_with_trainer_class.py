@@ -23,6 +23,7 @@ def main():
                                                                                                path='.././datasets')
     model, optimizer = medzoo.create_model(args)
     # criterion = create_loss('CrossEntropyLoss')
+    # print('train with trainer class')
     criterion = DiceLoss(classes=args.classes, weight=torch.tensor([0.1, 1, 1, 1]).cuda())
 
     if args.cuda:

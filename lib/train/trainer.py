@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+from torch import nn as nn
 from lib.utils.general import prepare_input
 from lib.visual3D_temp.BaseWriter import TensorboardWriter
 
@@ -62,8 +62,14 @@ class Trainer:
             # print(f'trainer.py: input_tensor size = {input_tensor.size()}')
             output = self.model(input_tensor)
             loss_dice, per_ch_score = self.criterion(output, target)
+            # print(f'trainer.py: output dim = {output.size()}, target.dim = {target.size()}')
             # loss_dice = self.criterion(output, target)
+            # print(f'dice loss = {loss_dice}')
+
+            # L = nn.MSELoss()
+            # loss_dice = L(output, target)
             loss_dice.backward()
+            # print(f'l2 loss = {loss_dice}')
             self.optimizer.step()
             # self.lr_scheduler.step()
 
@@ -85,10 +91,11 @@ class Trainer:
             with torch.no_grad():
                 input_tensor, target = prepare_input(input_tuple=input_tuple, args=self.args)
                 input_tensor.requires_grad = False
-
                 output = self.model(input_tensor)
+
                 loss, per_ch_score = self.criterion(output, target)
-                # loss = self.criterion(output, target)
+                # L = nn.MSELoss()
+                # loss = L(output, target)
 
                 self.writer.update_scores(batch_idx, loss.item(), per_ch_score, 'val',
                                           epoch * self.len_epoch + batch_idx)

@@ -148,9 +148,11 @@ class ExtResNetBlock(nn.Module):
     Notice we use ELU instead of ReLU (order='cge') and put non-linearity after the groupnorm.
     """
 
-    def __init__(self, in_channels, out_channels, kernel_size=3, order='cge', num_groups=8, **kwargs):
+    def __init__(self, in_channels, out_channels, kernel_size=3, order='cge', num_groups=8, transformer=False, **kwargs):
         super(ExtResNetBlock, self).__init__()
 
+        if transformer:
+            self.transformer = transformer
         # first convolution
         self.conv1 = SingleConv(in_channels, out_channels, kernel_size=kernel_size, order=order, num_groups=num_groups)
         # residual block
@@ -208,7 +210,7 @@ class Encoder(nn.Module):
 
     def __init__(self, in_channels, out_channels, conv_kernel_size=3, apply_pooling=True,
                  pool_kernel_size=2, pool_type='max', basic_module=DoubleConv, conv_layer_order='gcr',
-                 num_groups=8, padding=1):
+                 num_groups=8, padding=1, transformer=False):
         super(Encoder, self).__init__()
         assert pool_type in ['max', 'avg']
         if apply_pooling:
@@ -313,16 +315,25 @@ def create_encoders(in_channels, f_maps, basic_module, conv_kernel_size, conv_pa
                     pool_kernel_size):
     # create encoder path consisting of Encoder modules. Depth of the encoder is equal to `len(f_maps)`
     encoders = []
+    # fmaps = [64, 128, 256, 512, 1024]
     for i, out_feature_num in enumerate(f_maps):
-        # print(f'building blocks: fmaps = {f_maps}, i = {i}, len = {len(f_maps)}')
         if i == 0:
             encoder = Encoder(in_channels, out_feature_num,
-                              apply_pooling=False,  # skip pooling in the firs encoder
+                              apply_pooling=False,  # skip pooling in the first encoder
                               basic_module=basic_module,
                               conv_layer_order=layer_order,
                               conv_kernel_size=conv_kernel_size,
                               num_groups=num_groups,
                               padding=conv_padding)
+        elif i == len(f_maps - 1):
+            encoder = Encoder(f_maps[i - 1], out_feature_num,
+                              basic_module=basic_module,
+                              conv_layer_order=layer_order,
+                              conv_kernel_size=conv_kernel_size,
+                              num_groups=num_groups,
+                              pool_kernel_size=pool_kernel_size,
+                              padding=conv_padding,
+                              transformer=True)
         else:
             # TODO: adapt for anisotropy in the data, i.e. use proper pooling kernel to make the data isotropic after 1-2 pooling operations
             encoder = Encoder(f_maps[i - 1], out_feature_num,
