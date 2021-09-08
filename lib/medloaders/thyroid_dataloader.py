@@ -181,7 +181,7 @@ class Thyroid_dataset(Dataset):
         self.transform = augment3D.RandomChoice(
             transforms=[augment3D.GaussianNoise(mean=0, std=0.01), augment3D.RandomRotation(),
                         augment3D.RandomShift(), augment3D.RandomZoom()
-                        ], p=0.8)
+                        ], p=0.9)
         # transforms = tio.Compose([
         #     tio.
         # ])
@@ -190,12 +190,13 @@ class Thyroid_dataset(Dataset):
 
         [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
         # print('data transformed')
+
         # [img_ct_data], mask_combined = self.transform([img_ct_data], mask_combined)
 
         # print(f'af ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # img_ct_data, mask_combined = self.transform(img_ct_data, mask_combined)
 
-        # img_ct_dataimg_ct_data
+        # img_ct_data
         # print(f'torch.FloatTensor(img_mask_data.copy()) = {torch.FloatTensor(img_mask_data.copy()).size()}')
         # print(f'torch.FloatTensor(img_mask_data.copy()).unsqueeze(0) = {torch.FloatTensor(img_mask_data.copy()).unsqueeze(0).size()}')
         # print(f'torch.FloatTensor(img_ct_data.copy()).unsqueeze(0) = {torch.FloatTensor(img_ct_data.copy()).size()}')

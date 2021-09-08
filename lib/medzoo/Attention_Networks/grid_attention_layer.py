@@ -237,15 +237,12 @@ class _GridAttentionBlockND_TORR(nn.Module):
             self.theta = conv_nd(in_channels=self.in_channels, out_channels=self.inter_channels,
                                  kernel_size=self.sub_sample_kernel_size, stride=self.sub_sample_factor, padding=0, bias=False)
 
-
         if use_phi:
             self.phi = conv_nd(in_channels=self.gating_channels, out_channels=self.inter_channels,
                                kernel_size=self.sub_sample_kernel_size, stride=self.sub_sample_factor, padding=0, bias=False)
 
-
         if use_psi:
             self.psi = conv_nd(in_channels=self.inter_channels, out_channels=1, kernel_size=1, stride=1, padding=0, bias=True)
-
 
         if nonlinearity1:
             if nonlinearity1 == 'relu':
@@ -259,7 +256,6 @@ class _GridAttentionBlockND_TORR(nn.Module):
         # Initialise weights
         for m in self.children():
             init_weights(m, init_type='kaiming')
-
 
         if use_psi and self.mode == 'concatenation_sigmoid':
             nn.init.constant(self.psi.bias.data, 3.0)

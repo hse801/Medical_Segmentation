@@ -13,6 +13,9 @@ class WeightedCrossEntropyLoss(torch.nn.Module):
 
     def forward(self, input, target):
         weight = self._class_weights(input)
+        print(f'target size = {target.size()}')
+        target = target.squeeze(1)
+        print(f'target size af = {target.size()}')
         return torch.nn.functional.cross_entropy(input, target, weight=weight, ignore_index=self.ignore_index)
 
     @staticmethod

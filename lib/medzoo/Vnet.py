@@ -164,7 +164,7 @@ class VNet(BaseModel):
         ideal_out = torch.rand(1, self.classes, 32, 32, 32)
         out = self.forward(input_tensor)
         assert ideal_out.shape == out.shape
-        summary(self.to(torch.device(device)), (self.in_channels, 32, 32, 32),device=device)
+        summary(self.to(torch.device(device)), (self.in_channels, 32, 32, 32), device=device)
         # import torchsummaryX
         # torchsummaryX.summary(self, input_tensor.to(device))
         print("Vnet test is complete")

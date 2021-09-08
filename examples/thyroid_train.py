@@ -34,6 +34,7 @@ def main():
     criterion = DiceLoss(classes=args.classes)
     # criterion = WeightedSmoothL1Loss()
     # criterion = PixelWiseCrossEntropyLoss()
+    dice_score = DiceLoss(classes=args.classes)
 
     if args.cuda:
         model = model.cuda()
@@ -43,7 +44,7 @@ def main():
         # print(net)
 
     start_time = time.time()
-    trainer = train.Trainer(args, model, criterion, optimizer, train_data_loader=train_generator,
+    trainer = train.Trainer(args, model, criterion, optimizer, dice_score, train_data_loader=train_generator,
                             valid_data_loader=val_generator)
     trainer.training()
 

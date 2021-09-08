@@ -3,6 +3,7 @@ import torch
 from torch import nn as nn
 from lib.utils.general import prepare_input
 from lib.visual3D_temp.BaseWriter import TensorboardWriter
+from lib.losses3D import *
 
 
 class Trainer:
@@ -10,13 +11,14 @@ class Trainer:
     Trainer class
     """
 
-    def __init__(self, args, model, criterion, optimizer, train_data_loader,
+    def __init__(self, args, model, criterion, optimizer, dice_score, train_data_loader,
                  valid_data_loader=None):
 
         self.args = args
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
+        self.dice_score = dice_score
         self.train_data_loader = train_data_loader
         # epoch-based training
         self.len_epoch = len(self.train_data_loader)
@@ -61,19 +63,23 @@ class Trainer:
             input_tensor.requires_grad = True
             # print(f'trainer.py: input_tensor size = {input_tensor.size()}')
             output = self.model(input_tensor)
-            loss_dice, per_ch_score = self.criterion(output, target)
+
             # print(f'trainer.py: output dim = {output.size()}, target.dim = {target.size()}')
             # loss_dice = self.criterion(output, target)
             # print(f'dice loss = {loss_dice}')
 
-            # L = nn.MSELoss()
-            # loss_dice = L(output, target)
-            loss_dice.backward()
+            L = WeightedCrossEntropyLoss()
+            loss = L(output, target)
+            _, per_ch_score = self.criterion(output, target)
+            # loss = self.criterion(output, target)
+
+            # loss = WeightedCrossEntropyLoss()
+            loss.backward()
             # print(f'l2 loss = {loss_dice}')
             self.optimizer.step()
             # self.lr_scheduler.step()
 
-            self.writer.update_scores(batch_idx, loss_dice.item(), per_ch_score, 'train',
+            self.writer.update_scores(batch_idx, loss.item(), per_ch_score, 'train',
                                       epoch * self.len_epoch + batch_idx)
             # self.writer.update_scores(batch_idx, loss_dice.item(), loss_dice.item(), 'train',
             #                           epoch * self.len_epoch + batch_idx)
@@ -93,9 +99,12 @@ class Trainer:
                 input_tensor.requires_grad = False
                 output = self.model(input_tensor)
 
-                loss, per_ch_score = self.criterion(output, target)
-                # L = nn.MSELoss()
-                # loss = L(output, target)
+                # _, per_ch_score = self.criterion(output, target)
+                L = WeightedCrossEntropyLoss()
+                loss = L(output, target)
+                # loss = WeightedCrossEntropyLoss()
+                _, per_ch_score = self.criterion(output, target)
+                # loss = self.criterion(output, target)
 
                 self.writer.update_scores(batch_idx, loss.item(), per_ch_score, 'val',
                                           epoch * self.len_epoch + batch_idx)

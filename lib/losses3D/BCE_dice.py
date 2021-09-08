@@ -20,4 +20,4 @@ class BCEDiceLoss(nn.Module):
         assert input.size() == target_expanded.size(), "'input' and 'target' must have the same shape"
         loss_1 = self.alpha * self.bce(input, target_expanded)
         loss_2, channel_score = self.beta * self.dice(input, target_expanded)
-        return  (loss_1+loss_2) , channel_score
+        return (loss_1+loss_2), channel_score

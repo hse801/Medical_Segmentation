@@ -170,6 +170,8 @@ class ExtResNetBlock(nn.Module):
         else:
             self.non_linearity = nn.ReLU(inplace=True)
 
+        self.dropout3d = nn.Dropout3d(p=0.1)
+
     def forward(self, x):
         # apply first convolution and save the output as a residual
         out = self.conv1(x)
@@ -180,6 +182,7 @@ class ExtResNetBlock(nn.Module):
         out = self.conv3(out)
 
         out += residual
+        out = self.dropout3d(out)
         out = self.non_linearity(out)
 
         return out
@@ -317,7 +320,7 @@ def create_encoders(in_channels, f_maps, basic_module, conv_kernel_size, conv_pa
         # print(f'building blocks: fmaps = {f_maps}, i = {i}, len = {len(f_maps)}')
         if i == 0:
             encoder = Encoder(in_channels, out_feature_num,
-                              apply_pooling=False,  # skip pooling in the firs encoder
+                              apply_pooling=False,  # skip pooling in the first encoder
                               basic_module=basic_module,
                               conv_layer_order=layer_order,
                               conv_kernel_size=conv_kernel_size,

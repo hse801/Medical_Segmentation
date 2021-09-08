@@ -51,10 +51,14 @@ mask_copy = np.zeros((64, 64, 64)).astype(np.float32)
 #                         [0, 0, zoom_percentage, 0],
 #                         [0, 0, 0, 1]])
 # mask_res = ndimage.interpolation.affine_transform(img_mask_data, zoom_matrix)
-sx = ndimage.sobel(img_mask_data, axis=0, mode='constant')
-sy = ndimage.sobel(img_mask_data, axis=1, mode='constant')
+sx = ndimage.sobel(img_mask_data, axis=1, mode='constant')
+sy = ndimage.sobel(img_mask_data, axis=2, mode='constant')
+print(f'shape sx = {len(sx)}, sy = {len(sy)}')
 mask_res = np.hypot(sx, sy)
-
+mask_res = (mask_res - np.min(mask_res)) / (np.max(mask_res) - np.min(mask_res))
+mask_res = sy
+# mask_res = np.where(mask_res > 0.5, 1, 0)
+# mask_res[mask_res > 0] = 1
 # print(f'edge = {type(edge)}, shape = {np.shape(edge)}')
 
 # mask_res = scipy.ndimage.interpolation.zoom(img_mask_data, 0.9)
@@ -65,4 +69,4 @@ mask_res = np.hypot(sx, sy)
 # print(f'{type(output)}')
 os.chdir(thyroid_path)
 mask_res_img = sitk.GetImageFromArray(mask_res)
-sitk.WriteImage(mask_res_img[:, :, :], 'mask_res2.nii.gz')
+sitk.WriteImage(mask_res_img[:, :, :], 'mask_res3.nii.gz')
