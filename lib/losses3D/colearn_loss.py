@@ -16,7 +16,7 @@ def tversky(pred, target):
     return (true_pos + 1e-5)/(true_pos + alpha*false_neg + (1-alpha)*false_pos + 1e-5)
 
 
-class DiceLoss(nn.Module):
+class Co_DiceLoss(nn.Module):
     def __init__(self):
         super().__init__()
 

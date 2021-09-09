@@ -18,7 +18,7 @@ from .Unet3D_OG.Unet3D_og import Abstract3DUNet, UNet3DOG, ResidualUNet3D
 from .Unet3D_kidney.Unet3D_kidney import ResUNetKidney
 from .ConResNet import CONRESNET
 from .DeepMedic import DeepMedic
-from .CoLearning import YNet, init
+# from .CoLearning import YNet, init
 
 model_list = ['UNET3D', 'DENSENET1', "UNET2D", 'DENSENET2', 'DENSENET3', 'HYPERDENSENET', "SKIPDENSENET3D",
               "DENSEVOXELNET", 'VNET', 'VNET2', "RESNET3DVAE", "RESNETMED3D", "COVIDNET1", "COVIDNET2", "CNN",
@@ -55,9 +55,9 @@ def create_model(args):
         model = ResidualUNet3D(in_channels=2, out_channels=2)
     elif model_name == 'RESUNETKIDNEY':
         model = ResUNetKidney(in_channels=1, out_channels=1)
-    elif model_name == 'COLEARN':
-        model = YNet(training=True)
-        model.apply(init)
+    # elif model_name == 'COLEARN':
+    #     model = YNet(training=True)
+    #     model.apply(init)
     elif model_name == 'TRANSBTS':
         model = TRANSBTS(_conv_repr=True, _pe_type="learned")
     elif model_name == 'CONRESNET':
