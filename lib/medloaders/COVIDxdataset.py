@@ -27,7 +27,7 @@ class COVIDxDataset(Dataset):
             self.paths, self.labels = read_filepaths(trainfile)
         elif (mode == 'val'):
             self.paths, self.labels = read_filepaths(testfile)
-        print("{} examples =  {}".format(mode, len(self.paths)))
+        print("{} train =  {}".format(mode, len(self.paths)))
         self.mode = mode
         self.full_volume = None
         self.affine = None

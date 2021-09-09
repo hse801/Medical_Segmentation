@@ -81,6 +81,7 @@ for f in file_path:
     # idx_list_slice = sorted(range(len(slice_position_tmp)), key=lambda k: slice_position_tmp[k])
     # print(f'slice_position = {slice_position}')
     # print(f'idx_list_slice = {idx_list_slice}')
+    break
 
 
 

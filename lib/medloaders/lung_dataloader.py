@@ -60,7 +60,12 @@ class Lung_dataset(Dataset):
         # print(f'img_ct_data = {img_ct_data.shape}, img_pet_data = {img_pet_data.shape}')
         # print(f'img_primary_data = {img_primary_data.shape}, img_lymph_data = {img_lymph_data.shape}')
 
-        img_mask_data = np.stack((img_primary_data, img_lymph_data), axis=0)
+        # 2 class labels
+        # img_mask_data = np.stack((img_primary_data, img_lymph_data), axis=0)
+
+        # 1 class labels
+        img_mask_data = img_primary_data + img_lymph_data
+        img_mask_data[img_mask_data > 0] = 1
 
         # sum lymph and primary
         # img_mask_data = img_primary_data + img_lymph_data
