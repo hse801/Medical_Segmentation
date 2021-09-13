@@ -4,9 +4,11 @@ from torch import nn as nn
 from lib.utils.general import prepare_input
 from lib.visual3D_temp.BaseWriter import TensorboardWriter
 from lib.losses3D import *
+from torch.autograd import Variable
+from lib.losses3D.basic import compute_per_channel_dice
 
 
-class Trainer:
+class CoTrainer:
     """
     Trainer class
     """
@@ -55,29 +57,32 @@ class Trainer:
     def train_epoch(self, epoch):
         self.model.train()
         print('Training start---------------------------------------------------')
-        for batch_idx, input_tuple in enumerate(self.train_data_loader):
+        for batch_idx, (ct, seg, pet) in enumerate(self.train_data_loader):
 
             self.optimizer.zero_grad()
 
-            input_tensor, target = prepare_input(input_tuple=input_tuple, args=self.args)
-            input_tensor.requires_grad = True
+            # input_tensor, target = prepare_input(input_tuple=input_tuple, args=self.args)
+            ct = ct.cuda()
+            seg = seg.cuda()
+            pet = pet.cuda()
+
+            ct = Variable(ct)
+            seg = Variable(seg)
+            pet = Variable(pet)
+
+            outputs, outputs_temp = self.model(ct, pet)
+
+            # input_tensor.requires_grad = True
             # print(f'trainer.py: input_tensor size = {input_tensor.size()}')
-            output = self.model(input_tensor)
+            # output = self.model(input_tensor)
 
             # print(f'trainer.py: output dim = {output.size()}, target.dim = {target.size()}')
-            # loss_dice = self.criterion(output, target)
-            # print(f'dice loss = {loss_dice}')
 
-            # L = WeightedCrossEntropyLoss()
-            # loss = L(output, target)
-            loss, per_ch_score = self.criterion(output, target)
-            # loss = self.criterion(output, target)
+            # _, per_ch_score = self.criterion(output, target)
 
-            # loss = WeightedCrossEntropyLoss()
+            loss = self.criterion(outputs, outputs_temp, seg)
             loss.backward()
-            # print(f'l2 loss = {loss_dice}')
             self.optimizer.step()
-            # self.lr_scheduler.step()
 
             self.writer.update_scores(batch_idx, loss.item(), per_ch_score, 'train',
                                       epoch * self.len_epoch + batch_idx)
