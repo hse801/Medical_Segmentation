@@ -84,10 +84,6 @@ for f in file_path:
     break
 
 
-
-
-
-
 def convert_img(input_name, output_name, new_width=None):
     image_file_reader = sitk.ImageFileReader()
     # only read DICOM images

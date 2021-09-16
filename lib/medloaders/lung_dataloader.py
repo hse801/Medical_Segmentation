@@ -61,86 +61,19 @@ class Lung_dataset(Dataset):
         # print(f'img_primary_data = {img_primary_data.shape}, img_lymph_data = {img_lymph_data.shape}')
 
         # 2 class labels
-        # img_mask_data = np.stack((img_primary_data, img_lymph_data), axis=0)
+        img_mask_data = np.stack((img_primary_data, img_lymph_data), axis=0)
 
         # 1 class labels
-        img_mask_data = img_primary_data + img_lymph_data
-        img_mask_data[img_mask_data > 0] = 1
+        # img_mask_data = img_primary_data + img_lymph_data
+        # img_mask_data[img_mask_data > 0] = 1
 
         # sum lymph and primary
         # img_mask_data = img_primary_data + img_lymph_data
-
+        # print(f'img_ct_data = {img_ct_data.shape}, img_pet_data = {img_pet_data.shape}, img_mask_data = {img_mask_data.shape}')
         if self.test_flag == 1:
             return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
                    torch.FloatTensor(img_mask_data.copy())
             # return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
-
-        # else:
-        #     img_ct_path = self.ct_path[idx]
-        #     img_ct = sitk.ReadImage(img_ct_path)
-        #     # print(f'ct path for validation = {img_ct_path}')
-        #
-        #     img_ct_data = sitk.GetArrayFromImage(img_ct)
-        #     # img_ct_data = img_ct_data.reshape(1, -1, 128, 160)
-        #     # img_ct_data[img_ct_data > 500] = 500
-        #     # img_ct_data = (img_ct_data - nums[0]) / (nums[1] + 1e-8)
-        #     img_ct_data = (img_ct_data - np.mean(img_ct_data)) / (np.std(img_ct_data) + 1e-8)
-        #
-        #     # for 1 channel
-        #     img_mask_path = self.mask_path[idx]
-        #     img_mask = sitk.ReadImage(img_mask_path)
-        #     img_mask_data = sitk.GetArrayFromImage(img_mask)
-        #     img_mask_data[img_mask_data > 0] = 1
-        #
-        #     # For ConResNet
-        #     # img -> res
-        #     # ct_size = np.shape(img_ct_data)[0]
-        #     # # img_ct_data = np.reshape(img_ct_data, (1, ct_size, ct_size, ct_size))
-        #     # ct_size = img_ct_data[0].size()
-        #     # ct_copy = np.zeros((ct_size, ct_size, ct_size)).astype(np.float32)
-        #     # ct_copy[1:, :, :] = img_ct_data[0: ct_size - 1, :, :]
-        #     # ct_res = img_ct_data - ct_copy
-        #     # ct_res[0, :, :] = 0
-        #
-        #     # if self.ConResNet:
-        #     #     return img_ct_data.copy(), ct_res.copy(), img_mask_data.copy()
-        #
-        #
-        #
-        #
-        #     # print(f'mask path for validation = {img_mask_path}')
-        #     # print(f'before  reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
-        #     # img_mask_data = img_mask_data.reshape(1, -1, 128, 160)
-        #     # print(f'after reshape ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
-        #
-        #     # for 2 channel output
-        #     # img_left_path = self.left_path[idx]
-        #     # img_gt = sitk.ReadImage(img_left_path)
-        #     # img_left_data = sitk.GetArrayFromImage(img_gt)
-        #     #
-        #     # img_right_path = self.right_path[idx]
-        #     # img_right = sitk.ReadImage(img_right_path)
-        #     # img_right_data = sitk.GetArrayFromImage(img_right)
-        #     #
-        #     # mask_combined = np.stack((img_left_data, img_right_data), axis=0)
-        #
-        #     # create 2 channel mask
-        #     # mask_left = np.where(img_mask_data == 5120, 1, 0)
-        #     # mask_right = np.where(img_mask_data == 7168, 1, 0)
-        #     # mask_combined = np.stack((mask_left, mask_right), axis=0)
-        #     # print(f'mask_combined.size = {np.shape(mask_combined)}')
-        #
-        #     # img_mask_data[img_mask_data == 5120] = 1 # for 2 labels
-        #     # img_mask_data[img_mask_data > 5120] = 2
-        #
-        #     # img_mask_data = img_mask_data / img_mask_data.max()
-        #
-        #     # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
-        #     return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
-        #     # return torch.FloatTensor(img_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
-        # print(f'ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
-        # print(f'ct max = {np.max(img_ct_data)}, mask max = {np.max(img_mask_data)}')
-        # return img_ct_data, img_mask_data
 
         # if self.augmentation:
         self.transform = augment3D.RandomChoice(
@@ -151,12 +84,13 @@ class Lung_dataset(Dataset):
         # [pet_ct_data], img_mask_data = self.transform([pet_ct_data], img_mask_data)
 
         # Apply transform
-        # [img_ct_data, img_pet_data], img_mask_data = self.transform([img_ct_data, img_pet_data], img_mask_data)
+        [img_ct_data, img_pet_data], img_mask_data = self.transform([img_ct_data, img_pet_data], img_mask_data)
 
         # pet_ct_data = np.stack((img_ct_data, img_pet_data), axis=0)
 
         return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
                torch.FloatTensor(img_mask_data.copy())
+        # return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 
     def __len__(self):
         return len(self.ct_path)

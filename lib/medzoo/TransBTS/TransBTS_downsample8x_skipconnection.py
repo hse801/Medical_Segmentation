@@ -72,7 +72,7 @@ class TransformerBTS(nn.Module):
                 padding=1
             )
 
-        self.Unet = Unet(in_channels=1, base_channels=16, num_classes=4)
+        self.Unet = Unet(in_channels=num_channels, base_channels=16, num_classes=4)
         self.bn = nn.BatchNorm3d(128)
         self.relu = nn.ReLU(inplace=True)
 
@@ -316,11 +316,11 @@ class DeBlock(nn.Module):
         return x1
 
 
-def TRANSBTS(_conv_repr=True, _pe_type="learned"):
+def TRANSBTS(img_dim=128, num_classes=2, num_channels=2, _conv_repr=True, _pe_type="learned"):
 
-    img_dim = 64
-    num_classes = 1
-    num_channels = 1
+    # img_dim = 64
+    # num_classes = 2
+    # num_channels = 1
     patch_dim = 4
     # aux_layers = [1, 2, 3, 4]
     model = BTS(
@@ -345,13 +345,13 @@ def TRANSBTS(_conv_repr=True, _pe_type="learned"):
     # return aux_layers, model
 
 
-if __name__ == '__main__':
-    with torch.no_grad():
-        import os
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-        cuda0 = torch.device('cuda:0')
-        x = torch.rand((1, 1, 128, 128, 128), device=cuda0)
-        _, model = TRANSBTS(_conv_repr=True, _pe_type="learned")
-        model.cuda()
-        y = model(x)
-        print(y.shape)
+# if __name__ == '__main__':
+#     with torch.no_grad():
+#         import os
+#         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+#         cuda0 = torch.device('cuda:0')
+#         x = torch.rand((1, 1, 128, 128, 128), device=cuda0)
+#         _, model = TRANSBTS(img_dim=128, num_classes=2, num_channels=2, _conv_repr=True, _pe_type="learned")
+#         model.cuda()
+#         y = model(x)
+#         print(y.shape)

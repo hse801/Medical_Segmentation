@@ -61,15 +61,15 @@ def compute_per_channel_dice(input, target, epsilon=1e-6, weight=None):
          epsilon (float): prevents division by zero
          weight (torch.Tensor): Cx1 tensor of weight per channel/class
     """
-    print('start compute_per_channel_dice----------------------------------------------------')
+    # print('start compute_per_channel_dice----------------------------------------------------')
     # input and target shapes must match
-    print(f'input.size = {input.size()}, target.size = {target.size()}')
+    # print(f'input.size = {input.size()}, target.size = {target.size()}')
     # target = target.unsqueeze(1)
     # print(f'input.size = {input.size()}, target.size = {target.size()}')
     assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
-    print(f'basic.py: input = {input}')
-    print(f'target = {target}')
+    # print(f'basic.py: input = {input}')
+    # print(f'target = {target}')
     input = flatten(input)
     # print(f'basic.py: bf flatten target.size() = {target.size()}')
     target = flatten(target)

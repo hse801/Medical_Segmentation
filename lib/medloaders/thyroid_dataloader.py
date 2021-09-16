@@ -228,6 +228,10 @@ crop_mask_size_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_size*.nii.gz')
 left_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_left.nii.gz')
 right_mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_mask_right.nii.gz')
 
+# 0902 new dataset
+new_ct_path = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/CT_*.nii.gz')
+new_mask_path = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/MASK_*.nii.gz')
+
 
 # train_ds = Thyroid_dataset(ct_path[0:308], mask_path[0:308], test_flag=0)
 # val_ds = Thyroid_dataset(ct_path[308:368], mask_path[308:368], test_flag=1)

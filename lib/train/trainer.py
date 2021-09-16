@@ -11,14 +11,14 @@ class Trainer:
     Trainer class
     """
 
-    def __init__(self, args, model, criterion, optimizer, dice_score, train_data_loader,
+    def __init__(self, args, model, criterion, optimizer, train_data_loader,
                  valid_data_loader=None):
 
         self.args = args
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
-        self.dice_score = dice_score
+        # self.dice_score = dice_score
         self.train_data_loader = train_data_loader
         # epoch-based training
         self.len_epoch = len(self.train_data_loader)
@@ -100,10 +100,10 @@ class Trainer:
                 output = self.model(input_tensor)
 
                 # _, per_ch_score = self.criterion(output, target)
-                L = WeightedCrossEntropyLoss()
-                loss = L(output, target)
+                # L = WeightedCrossEntropyLoss()
+                # loss = L(output, target)
                 # loss = WeightedCrossEntropyLoss()
-                _, per_ch_score = self.criterion(output, target)
+                loss, per_ch_score = self.criterion(output, target)
                 # loss = self.criterion(output, target)
 
                 self.writer.update_scores(batch_idx, loss.item(), per_ch_score, 'val',

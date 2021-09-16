@@ -59,7 +59,7 @@ def create_model(args):
     #     model = YNet(training=True)
     #     model.apply(init)
     elif model_name == 'TRANSBTS':
-        model = TRANSBTS(_conv_repr=True, _pe_type="learned")
+        model = TRANSBTS(img_dim=128, num_classes=2, num_channels=2, _conv_repr=True, _pe_type="learned")
     elif model_name == 'CONRESNET':
         model = CONRESNET(num_classes=1)
     elif model_name == "DEEPMEDIC":
@@ -75,7 +75,7 @@ def create_model(args):
     elif model_name == "RESNET3DVAE":
         model = ResNet3dVAE(in_channels=in_channels, classes=num_classes, dim=args.dim)
     elif model_name == "SKIPDENSENET3D":
-        model = SkipDenseNet3D(growth_rate=16, num_init_features=32, drop_rate=0.1, classes=num_classes)
+        model = SkipDenseNet3D(in_channels=2, growth_rate=16, num_init_features=32, drop_rate=0.1, classes=num_classes)
     elif model_name == "COVIDNET1": # 2D
         model = CovidNet('small', num_classes)
     elif model_name == "COVIDNET2": # 2D

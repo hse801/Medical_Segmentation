@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 
 """
 Loss function for Co learning network
@@ -107,6 +108,7 @@ def flatten(tensor):
 
 def compute_dice(preds, labels):
     assert preds.shape[0] == labels.shape[0], "predict & target batch size don't match"
+    preds = F.sigmoid(preds)
     predict = preds.contiguous().view(preds.shape[0], -1)
     target = labels.contiguous().view(labels.shape[0], -1)
 

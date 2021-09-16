@@ -27,7 +27,7 @@ class LearnedPositionalEncoding(nn.Module):
         super(LearnedPositionalEncoding, self).__init__()
 
         # self.position_embeddings = nn.Parameter(torch.zeros(1, 4096, 512)) #8x
-        self.position_embeddings = nn.Parameter(torch.zeros(2, 512, 512))
+        self.position_embeddings = nn.Parameter(torch.zeros(2, 3200, 512))
 
     def forward(self, x, position_ids=None):
 
