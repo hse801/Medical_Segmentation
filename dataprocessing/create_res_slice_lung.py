@@ -7,9 +7,10 @@ import torchio as tio
 
 # For ConResNet
 # img -> res
-lung_path = 'E:/HSE/LungCancerData/train/27903971/'
+lung_path = 'E:/HSE/LungCancerData/train/28469847/'
 # ct_path = lung_path + 'CT_cut.nii.gz'
 ct_path = lung_path + 'CT_cut.nii.gz'
+pet_path = lung_path + 'PET_cut.nii.gz'
 lymph_path = lung_path + 'lymph_cut_sum.nii.gz'
 
 os.chdir(lung_path)
@@ -30,6 +31,26 @@ ct_res[0, :, :] = 0
 
 ct_res_img = sitk.GetImageFromArray(ct_res)
 sitk.WriteImage(ct_res_img[:, :, :], 'CT_res.nii.gz')
+print(f'file saved in {os.getcwd()}')
+
+os.chdir(lung_path)
+img_pet = sitk.ReadImage(pet_path)
+img_pet_data = sitk.GetArrayFromImage(img_pet)
+# img_pet_data = (img_pet_data - np.mean(img_pet_data)) / (np.std(img_ct_data) + 1e-8)
+pet_size = np.shape(img_pet_data)[0]
+# ct_copy = np.zeros((80, 128, 160)).astype(np.float32)
+pet_copy = np.zeros((80, 128, 160)).astype(np.float32)
+# print(f'ct_copy shape = {np.shape(ct_copy)}')
+pet_copy[1:, :, :] = img_pet_data[0: ct_size - 1, :, :]
+pet_res = img_pet_data - pet_copy
+pet_res[0, :, :] = 0
+
+# sx = ndimage.sobel(img_ct_data, axis=0, mode='constant')
+# sy = ndimage.sobel(img_ct_data, axis=1, mode='constant')
+# ct_res = np.hypot(sx, sy)
+
+pet_res_img = sitk.GetImageFromArray(pet_res)
+sitk.WriteImage(pet_res_img[:, :, :], 'PET_res.nii.gz')
 print(f'file saved in {os.getcwd()}')
 
 

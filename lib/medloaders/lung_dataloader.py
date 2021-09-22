@@ -71,26 +71,26 @@ class Lung_dataset(Dataset):
         # img_mask_data = img_primary_data + img_lymph_data
         # print(f'img_ct_data = {img_ct_data.shape}, img_pet_data = {img_pet_data.shape}, img_mask_data = {img_mask_data.shape}')
         if self.test_flag == 1:
-            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
-                   torch.FloatTensor(img_mask_data.copy())
-            # return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
+            # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
+            #        torch.FloatTensor(img_mask_data.copy())
+            return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 
         # if self.augmentation:
-        self.transform = augment3D.RandomChoice(
-            transforms=[augment3D.RandomRotation(),
-                        augment3D.RandomShift(), augment3D.RandomZoom()
-                        ], p=0.4)
+        # self.transform = augment3D.RandomChoice(
+        #     transforms=[augment3D.RandomRotation(),
+        #                 augment3D.RandomShift(), augment3D.RandomZoom()
+        #                 ], p=0.4)
         # augment3D.GaussianNoise(mean=0, std=0.01),
         # [pet_ct_data], img_mask_data = self.transform([pet_ct_data], img_mask_data)
 
         # Apply transform
-        [img_ct_data, img_pet_data], img_mask_data = self.transform([img_ct_data, img_pet_data], img_mask_data)
+        # [img_ct_data, img_pet_data], img_mask_data = self.transform([img_ct_data, img_pet_data], img_mask_data)
 
         # pet_ct_data = np.stack((img_ct_data, img_pet_data), axis=0)
 
-        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
-               torch.FloatTensor(img_mask_data.copy())
-        # return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
+        # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_pet_data.copy()).unsqueeze(0),\
+        #        torch.FloatTensor(img_mask_data.copy())
+        return torch.FloatTensor(pet_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
 
     def __len__(self):
         return len(self.ct_path)
@@ -110,7 +110,7 @@ valid_folder_path = glob.glob('E:/HSE/LungCancerData/valid/*/')
 
 train_ds = Lung_dataset(train_ct_path[0:780], train_pet_path[0:780], train_folder_path[0:780], test_flag=0)
 val_ds = Lung_dataset(valid_ct_path[0:70], valid_pet_path[0:70], valid_folder_path[0:70], test_flag=1)
-pred_ds = Lung_dataset(valid_ct_path[0:60], valid_pet_path[0:60], valid_folder_path[0:60], test_flag=1)
+pred_ds = Lung_dataset(valid_ct_path[0:70], valid_pet_path[0:70], valid_folder_path[0:70], test_flag=1)
 
 
 def generate_lung_dataset():
