@@ -15,12 +15,12 @@ from analysis.eval_metrics import ConfusionMatrix
 import pandas as pd
 
 
-def predictor(PATH, data_loader):
+def predictor(PATH, data_loader, model_path, csv_name, save_folder, mode='test'):
 
     # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
     # 2 channel label, 2 classes
-    model_path = PATH + 'RESUNETOGL_09_27___09_16_lung_/RESUNETOGL_09_27___09_16_lung__BEST.pth'
-    path_list = glob.glob('F:/LungCancerData/valid/*/')
+    model_path = PATH + model_path
+    path_list = glob.glob(f'F:/LungCancerData/{mode}/*/')
 
     # model = medzoo.UNet3D(in_channels=2, n_classes=2, base_n_filter=24)
     model = medzoo.ResidualUNet3D(in_channels=2, out_channels=2)
@@ -158,17 +158,20 @@ def predictor(PATH, data_loader):
                                                 'hausdorff_distance_p', 'hausdorff_distance_l',
                                                 'hausdorff_distance_95_p', 'hausdorff_distance_95_l'])
     # Add row of Mean value of each metrics
-    os.chdir(PATH + 'RESUNETOGL_09_27___09_16_lung_/')
+    os.chdir(PATH + save_folder)
     eval_df.loc['Mean'] = eval_df.mean()
     print(eval_df)
     print(eval_df.loc['Mean'])
-    eval_df.to_csv(PATH + '/prediction_BEST.csv', mode='w')
+    eval_df.to_csv(PATH + csv_name, mode='w')
     print(f'Evaluation csv saved in {os.getcwd()}')
 
 
 _, _, pred_loader = dataloaders.lung_dataloader.generate_lung_dataset()
 PATH = 'E:/HSE/Medical_Segmentation/saved_models/RESUNETOGL_checkpoints/'
+model_path = 'RESUNETOGL_09_27___09_16_lung_/RESUNETOGL_09_27___09_16_lung__BEST.pth'
+save_folder = 'RESUNETOGL_09_27___09_16_lung_/'
+csv_name = '/prediction_BEST.csv'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__last_epoch.pth'
 
-predictor(PATH=PATH, data_loader=pred_loader)
+predictor(PATH=PATH, data_loader=pred_loader, model_path=model_path, csv_name=csv_name, save_folder=save_folder, mode='test')
