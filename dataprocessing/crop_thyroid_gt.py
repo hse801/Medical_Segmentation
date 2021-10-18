@@ -6,6 +6,7 @@ import SimpleITK as sitk
 import glob
 import torch
 import lib.medloaders as dataloaders
+import skimage.transform as skTrans
 
 
 """
@@ -18,14 +19,20 @@ Crop nii file based on ground truth file
 """
 
 
-def crop_file(folder_path, count):
+def crop_file(folder_path: str, count):
     ct_file = folder_path + 'CT_rsmpl.nii.gz'
     mask_file = folder_path + 'Mask_rsmpl.nii.gz'
     spect_file = folder_path + 'SPECT_rsmpl.nii.gz'
 
-    img_mask = nb.load(mask_file)
-    img_mask_data = img_mask.get_fdata()
-    nzero = img_mask_data.nonzero()
+    img_ct = nb.load(ct_file)
+    img_mask = nb.load(ct_file)
+    img_spect = nb.load(ct_file)
+
+    ct_arr = img_resize(ct_file)
+    mask_arr = img_resize(mask_file)
+    spect_arr = img_resize(spect_file)
+
+    nzero = mask_arr.nonzero()
 
     x_mid = int((min(nzero[2]) + max(nzero[2])) / 2)
     y_mid = int((min(nzero[1]) + max(nzero[1])) / 2)
@@ -34,17 +41,42 @@ def crop_file(folder_path, count):
 
     os.chdir(folder_path)
 
-    cropped_ct_img = crop_file_to_img(x_mid, y_mid, z_mid, ct_file)
+    cropped_ct_arr = crop_arr(x_mid, y_mid, z_mid, ct_arr)
+    cropped_ct_img = nb.Nifti1Image(cropped_ct_arr, img_ct.affine, img_ct.header)
     nb.save(cropped_ct_img, f'crop_ct.nii.gz')
 
-    cropped_spect_img = crop_file_to_img(x_mid, y_mid, z_mid, spect_file)
-    nb.save(cropped_spect_img, f'crop_spect.nii.gz')
-
-    cropped_mask_img = crop_file_to_img(x_mid, y_mid, z_mid, mask_file)
+    cropped_mask_arr = crop_arr(x_mid, y_mid, z_mid, mask_arr)
+    cropped_mask_img = nb.Nifti1Image(cropped_mask_arr, img_mask.affine, img_mask.header)
     nb.save(cropped_mask_img, f'crop_mask.nii.gz')
 
+    cropped_spect_arr = crop_arr(x_mid, y_mid, z_mid, spect_arr)
+    cropped_spect_img = nb.Nifti1Image(cropped_spect_arr, img_spect.affine, img_spect.header)
+    nb.save(cropped_spect_img, f'crop_spect.nii.gz')
+
     print(f'files saved in {os.getcwd()}')
-    # x_max =
+
+
+def img_resize(src_file: str, dim=128):
+    # resize the file while maintaining the range
+    # return numpy array after resizing
+
+    img_src = nb.load(src_file)
+    img_src_data = img_src.get_fdata()
+    src_resize = skTrans.resize(img_src_data, (dim, dim, dim), order=1, preserve_range=True)
+    # print(f'type = {type(src_resize)}, affine = {img_src.affine}, header = {img_src.header}')
+
+    return src_resize
+
+
+def crop_arr(x_mid, y_mid, z_mid, file_arr):
+    # Get array as input
+    # set the same voxel size with file before crop
+    z_start, z_end = check_in_range(z_mid, crop_range=32, file_dim=256)
+    y_start, y_end = check_in_range(y_mid, crop_range=32, file_dim=256)
+    x_start, x_end = check_in_range(x_mid, crop_range=32, file_dim=256)
+    cropped_arr = file_arr[z_start:z_end, y_start:y_end, x_start:x_end]
+
+    return cropped_arr
 
 
 def crop_file_to_img(x_mid, y_mid, z_mid, file_to_crop):
