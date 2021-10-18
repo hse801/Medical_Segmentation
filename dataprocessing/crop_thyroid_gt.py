@@ -6,9 +6,7 @@ import SimpleITK as sitk
 import glob
 import torch
 import lib.medloaders as dataloaders
-import lib.medzoo as medzoo
-from lib.losses3D import DiceLoss
-from lib.visual3D_temp.BaseWriter import TensorboardWriter
+
 
 """
 Crop the 0902_Thyroid data
@@ -24,15 +22,11 @@ def crop_file(folder_path, count):
     ct_file = folder_path + 'CT_rsmpl.nii.gz'
     mask_file = folder_path + 'Mask_rsmpl.nii.gz'
     spect_file = folder_path + 'SPECT_rsmpl.nii.gz'
-    # pred_file = glob.glob(folder_path + f'pred_{count}.nii.gz')
 
     img_mask = nb.load(mask_file)
     img_mask_data = img_mask.get_fdata()
     nzero = img_mask_data.nonzero()
-    # print(f'nzero shape = {np.shape(nzero)}')
-    # print(f'nzero = {nzero}')
-    # print(f'nzero[0] = {min(nzero[0])}')
-    # print(f'nzero[2] = {nzero}')
+
     x_mid = int((min(nzero[2]) + max(nzero[2])) / 2)
     y_mid = int((min(nzero[1]) + max(nzero[1])) / 2)
     z_mid = int((min(nzero[0]) + max(nzero[0])) / 2)
@@ -59,12 +53,10 @@ def crop_file_to_img(x_mid, y_mid, z_mid, file_to_crop):
     file_arr = file_img.get_fdata()
 
     # set the same voxel size with file before crop
-    # print(f'file_spacing = {file_spacing}, file_origin = {file_origin}, file_direction = {file_direction}')
     z_start, z_end = check_in_range(z_mid, crop_range=32, file_dim=256)
     y_start, y_end = check_in_range(y_mid, crop_range=32, file_dim=256)
     x_start, x_end = check_in_range(x_mid, crop_range=32, file_dim=256)
     cropped_arr = file_arr[z_start:z_end, y_start:y_end, x_start:x_end]
-    # print(f'file_img.affine = {file_img.affine}')
     cropped_img = nb.Nifti1Image(cropped_arr, file_img.affine, file_img.header)
 
     return cropped_img
@@ -89,13 +81,11 @@ def check_in_range(mid, crop_range, file_dim):
 _, _, pred_loader = dataloaders.thyroid_dataloader.generate_thyroid_dataset()
 
 folder_path = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/')
-# print(f'type = {type(folder_path)}, len = {len(folder_path)}')
 count = 0
+
 for i in folder_path:
     crop_file(i, count)
     count += 1
     print(f'count = {count}')
     print('-------------------------------\n')
     # break
-# ct_path = glob.glob('E:/HSE/Thyroid/Dicom/*/CT_rsmpl.nii.gz')
-# mask_path = glob.glob('E:/HSE/Thyroid/Dicom/*/Mask_rsmpl.nii.gz')
