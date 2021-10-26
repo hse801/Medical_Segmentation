@@ -4,8 +4,8 @@ import os
 import torchvision
 import torchsummary
 import torch
-# import os.path as osp
-# import timeit
+import os.path as osp
+import timeit
 import lib.medloaders as medical_loaders
 import lib.medzoo as medzoo
 import lib.train as train
@@ -15,7 +15,6 @@ from lib.losses3D import DiceLoss
 from lib.losses3D import WeightedCrossEntropyLoss
 from lib.losses3D import PixelWiseCrossEntropyLoss
 from lib.losses3D import WeightedSmoothL1Loss
-from lib.losses3D import BCELossEdge
 
 import time
 
@@ -44,7 +43,6 @@ def main():
     #                                                                                            path='.././datasets')
     model, optimizer = medzoo.create_model(args)
     criterion = DiceLoss(classes=args.classes)
-    time.sleep(0.01)
     # criterion = WeightedSmoothL1Loss()
     # criterion = PixelWiseCrossEntropyLoss()
     # dice_score = DiceLoss(classes=args.classes)
@@ -53,11 +51,7 @@ def main():
     if args.resume:
         print('loading from checkpoint: {}'.format(args.reload_path))
         if os.path.exists(args.reload_path):
-            # print(f'Model path exists')
-            checkpoint = torch.load(args.reload_path)
-            model.load_state_dict(checkpoint['model_state_dict'])
-            # model.load_state_dict(torch.load(args.reload_path))
-            # model.load_state_dict(torch.load(args.reload_path, map_location=torch.device('cpu')))
+            model.load_state_dict(torch.load(args.reload_path, map_location=torch.device('cpu')))
         else:
             print('File not exists in the reload path: {}'.format(args.reload_path))
 
@@ -69,8 +63,7 @@ def main():
         # print(net)
 
     start_time = time.time()
-    # loss_BCE = BCELossEdge().to(device)
-    trainer = train.Trainer(args, model, criterion, optimizer, train_data_loader=train_generator,
+    trainer = train.Trainer_res(args, model, criterion, optimizer, train_data_loader=train_generator,
                             valid_data_loader=val_generator)
     trainer.training()
 
@@ -97,16 +90,14 @@ def get_arguments():
                         help='Tensor normalization: options ,max_min,',
                         choices=('max_min', 'full_volume_mean', 'brats', 'max', 'mean'))
     parser.add_argument('--split', default=0.8, type=float, help='Select percentage of training data(default: 0.8)')
-    parser.add_argument('--lr', default=1e-4, type=float,
+    parser.add_argument('--lr', default=1e-3, type=float,
                         help='learning rate (default: 1e-3)')
     parser.add_argument('--loadData', default=False)
     parser.add_argument('--cuda', action='store_true', default=True)
-    parser.add_argument("--reload_path", type=str, default='E:/HSE/Medical_Segmentation/saved_models/'
-                                                           'RESUNETOGT_checkpoints/RESUNETOGT_1026_1548_thyroid/'
-                                                           'RESUNETOGT_1026_1548_thyroid_BEST.pth')
-    parser.add_argument("--resume", type=str2bool, default=False)
-    # parser.add_argument('--resume', default='', type=str, metavar='PATH',
-    #                     help='path to latest checkpoint (default: none)')
+    parser.add_argument("--reload_path", type=str, default='snapshots/conresnet/ConResNet_40000.pth')
+    parser.add_argument("--reload_from_checkpoint", type=str2bool, default=False)
+    parser.add_argument('--resume', default='', type=str, metavar='PATH',
+                        help='path to latest checkpoint (default: none)')
     parser.add_argument('--model', type=str, default='UNET3D',
                         choices=('VNET', 'VNET2', 'UNET3D', 'DENSENET1', 'DENSENET2', 'DENSENET3', 'HYPERDENSENET',
                                  'SKIPDENSENET3D', 'COVIDNET1', 'COVIDNET2', 'RESNETMED3D', 'HIGHRESNET',
