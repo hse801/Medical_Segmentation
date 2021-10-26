@@ -6,6 +6,7 @@ from torch.nn import functional as F
 from kornia.filters.kernels import get_spatial_gradient_kernel2d, get_spatial_gradient_kernel3d, normalize_kernel2d, get_sobel_kernel_3x3
 import numpy as np
 import scipy.ndimage as ndimage
+import kornia
 
 
 def conv3d(in_channels, out_channels, kernel_size, bias, padding):
@@ -186,7 +187,165 @@ class Attention_SE_CA(nn.Module):
 #
 #     def forward(self, x):
 
+# def get_sobel_kernel_3d():
+#     """ Return a [3,1,3,3,3] sobel kernel"""
+#     return torch.tensor(
+#         [
+#             [[[-1, 0, 1],
+#               [-2, 0, 2],
+#               [-1, 0, 1]],
+#
+#              [[-2, 0, 2],
+#               [-4, 0, 4],
+#               [-2, 0, 2]],
+#
+#              [[-1, 0, 1],
+#               [-2, 0, 2],
+#               [-1, 0, 1]]],
+#
+#             [[[-1, -2, -1],
+#               [0, 0, 0],
+#               [1, 2, 1]],
+#
+#              [[-2, -4, -2],
+#               [0, 0, 0],
+#               [2, 4, 2]],
+#
+#              [[-1, -2, -1],
+#               [0, 0, 0],
+#               [1, 2, 1]]],
+#
+#             [[[-1, -2, -1],
+#               [-2, -4, -2],
+#               [-1, -2, -1]],
+#
+#              [[0, 0, 0],
+#               [0, 0, 0],
+#               [0, 0, 0]],
+#
+#              [[1, 2, 1],
+#               [2, 4, 2],
+#               [1, 2, 1]]]
+#         ]).unsqueeze(1)
+#
+#
+# def spacialGradient_3d(image):
+#     """ Implementation of a sobel 3d spatial gradient inspired by the kornia library.
+#
+#     :param image: Tensor [B,1,H,W,D]
+#     :return: Tensor [B,3,H,W,D]
+#
+#     :Example:
+#     H,W,D = (50,75,100)
+#     image = torch.zeros((H,W,D))
+#     mX,mY,mZ = torch.meshgrid(torch.arange(H),
+#                               torch.arange(W),
+#                               torch.arange(D))
+#
+#     mask_rond = ((mX - H//2)**2 + (mY - W//2)**2).sqrt() < H//4
+#     mask_carre = (mX > H//4) & (mX < 3*H//4) & (mZ > D//4) & (mZ < 3*D//4)
+#     mask_diamand = ((mY - W//2).abs() + (mZ - D//2).abs()) < W//4
+#     mask = mask_rond & mask_carre & mask_diamand
+#     image[mask] = 1
+#
+#
+#     grad_image = spacialGradient_3d(image[None,None])
+#     """
+#
+#     # sobel kernel is not implemented for 3D images yet in kornia
+#     # grad_image = SpatialGradient3d(mode='sobel')(image)
+#     kernel = get_sobel_kernel_3d().to(image.device).to(image.dtype)
+#     spatial_pad = [1,1,1,1,1,1]
+#     image_padded = F.pad(image,spatial_pad,'replicate').repeat(1,3,1,1,1)
+#     grad_image =  F.conv3d(image_padded,kernel,padding=0,groups=3,stride=1)
+#
+#     return grad_image
 
+class SobelFilter(nn.Module):
+
+    def __init__(self):
+        super(SobelFilter, self).__init__()
+        kernel_v = [[0, -1, 0],
+                    [0, 0, 0],
+                    [0, 1, 0]]
+        kernel_h = [[0, 0, 0],
+                    [-1, 0, 1],
+                    [0, 0, 0]]
+        kernel_h = torch.FloatTensor(kernel_h).unsqueeze(0).unsqueeze(0)
+        kernel_v = torch.FloatTensor(kernel_v).unsqueeze(0).unsqueeze(0)
+        self.weight_h = nn.Parameter(data=kernel_h, requires_grad=False)
+        self.weight_v = nn.Parameter(data=kernel_v, requires_grad=False)
+
+    def get_gray(self,x):
+        '''
+        Convert image to its gray one.
+        '''
+        gray_coeffs = [65.738, 129.057, 25.064]
+        convert = x.new_tensor(gray_coeffs).view(1, 3, 1, 1) / 256
+        x_gray = x.mul(convert).sum(dim=1)
+        return x_gray.unsqueeze(1)
+
+    def forward(self, x):
+        # x_list = []
+        # for i in range(x.shape[1]):
+        #     x_i = x[:, i]
+        #     x_i_v = F.conv2d(x_i.unsqueeze(1), self.weight_v, padding=1)
+        #     x_i_h = F.conv2d(x_i.unsqueeze(1), self.weight_h, padding=1)
+        #     x_i = torch.sqrt(torch.pow(x_i_v, 2) + torch.pow(x_i_h, 2) + 1e-6)
+        #     x_list.append(x_i)
+
+        # x = torch.cat(x_list, dim=1)
+        bs, channel, depth, heigt, width = x.shape
+        for b in range(bs):
+            for c in range(channel):
+                x_slice = x[b, c, :, :, :]
+        x_v = F.conv2d(x_slice, self.weight_v, padding=1)
+        x_h = F.conv2d(x_slice, self.weight_h, padding=1)
+        x = torch.sqrt(torch.pow(x_v, 2) + torch.pow(x_h, 2) + 1e-6)
+
+        return x
+
+
+def get_sobel_kernel_3d(self):
+    """ Return a [3,1,3,3,3] sobel kernel"""
+    return torch.tensor(
+        [
+            [[[-1, 0, 1],
+              [-2, 0, 2],
+              [-1, 0, 1]],
+
+             [[-2, 0, 2],
+              [-4, 0, 4],
+              [-2, 0, 2]],
+
+             [[-1, 0, 1],
+              [-2, 0, 2],
+              [-1, 0, 1]]],
+
+            [[[-1, -2, -1],
+              [0, 0, 0],
+              [1, 2, 1]],
+
+             [[-2, -4, -2],
+              [0, 0, 0],
+              [2, 4, 2]],
+
+             [[-1, -2, -1],
+              [0, 0, 0],
+              [1, 2, 1]]],
+
+            [[[-1, -2, -1],
+              [-2, -4, -2],
+              [-1, -2, -1]],
+
+             [[0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0]],
+
+             [[1, 2, 1],
+              [2, 4, 2],
+              [1, 2, 1]]]
+        ]).unsqueeze(1)
 
 
 class ExtResNetBlock(nn.Module):
@@ -223,9 +382,44 @@ class ExtResNetBlock(nn.Module):
 
         self.dropout3d = nn.Dropout3d(p=0.1)
         # self.attention = Attention_SE_CA(in_channels)
-        print(f'in_channels = {in_channels}, out_channels = {out_channels}')
+        # print(f'in_channels = {in_channels}, out_channels = {out_channels}')
+        # self.sobel = SobelFilter()
+        # self.sobel = kornia.filters.spatial_gradient3d()
         self.get_edge = get_edge
         self.edge_conv = nn.Conv3d(out_channels, out_channels, kernel_size=(1, 1, 1), stride=(1, 1, 1), padding=(0, 0, 0))
+
+
+    def _spatialGradient_3d(self, image):
+        """ Implementation of a sobel 3d spatial gradient inspired by the kornia library.
+
+        :param image: Tensor [B,1,H,W,D]
+        :return: Tensor [B,3,H,W,D]
+
+        :Example:
+        H,W,D = (50,75,100)
+        image = torch.zeros((H,W,D))
+        mX,mY,mZ = torch.meshgrid(torch.arange(H),
+                                  torch.arange(W),
+                                  torch.arange(D))
+
+        mask_rond = ((mX - H//2)**2 + (mY - W//2)**2).sqrt() < H//4
+        mask_carre = (mX > H//4) & (mX < 3*H//4) & (mZ > D//4) & (mZ < 3*D//4)
+        mask_diamand = ((mY - W//2).abs() + (mZ - D//2).abs()) < W//4
+        mask = mask_rond & mask_carre & mask_diamand
+        image[mask] = 1
+
+
+        grad_image = spacialGradient_3d(image[None,None])
+        """
+
+        # sobel kernel is not implemented for 3D images yet in kornia
+        # grad_image = SpatialGradient3d(mode='sobel')(image)
+        kernel = get_sobel_kernel_3d(image).to(image.device).to(image.dtype)
+        spatial_pad = [1, 1, 1, 1, 1, 1]
+        image_padded = F.pad(image, spatial_pad, 'replicate').repeat(1, 3, 1, 1, 1)
+        grad_image = F.conv3d(image_padded, kernel, padding=0, groups=3, stride=1)
+
+        return grad_image
 
     def _sobel(self, x):
         bs, channel, depth, height, width = x.shape
@@ -245,15 +439,31 @@ class ExtResNetBlock(nn.Module):
         edge = torch.from_numpy(edge).float().cuda()
         return edge
 
+    def _sobel_torch(self, x):
+        bs, channel, depth, height, width = x.shape
+        # print(f'x.shape = {x.shape}, type = {type(x)}')
+        # edge = np.zeros((bs, channel, depth, height, width))
+        edge = torch.zeros_like(x).cuda()
+        # print(f'edge.shape = {edge.shape}, x type = {type(x)}')
+        for d in range(depth):
+            x_slice = x[:, :, d, :, :]
+            sobel_slice = kornia.sobel(x_slice)
+            edge[:, :, d, :, :] = sobel_slice
+            # edge[b, c, :, :, :] = (edge[b, c, :, :, :] - np.min(edge[b, c, :, :, :])) / (np.max(edge[b, c, :, :, :]) - np.min(edge[b, c, :, :, :]))
+        return edge
+
     def forward(self, x):
         # apply first convolution and save the output as a residual
         if self.get_edge:
+            # print(f'1get_edge = {self.get_edge}')
             out = self.conv1(x)
             residual = out
+            # print(f'out size = {out.size()}')
             edge = torch.sigmoid(out)
-            edge = self._sobel(edge)
-            edge = self.edge_conv(edge)
-
+            edge = self._sobel_torch(edge)
+            # edge = kornia.filters.spatial_gradient3d(edge)
+            # edge = self._spatialGradient_3d(edge)
+            # print(f'edge size = {edge.size()}')
             # residual block
             out = self.conv2(out)
             out = self.conv3(out)
@@ -264,6 +474,7 @@ class ExtResNetBlock(nn.Module):
 
             out = out * (1 + torch.sigmoid(edge))
         else:
+            # print(f'2get_edge = {self.get_edge}')
             out = self.conv1(x)
             residual = out
 
