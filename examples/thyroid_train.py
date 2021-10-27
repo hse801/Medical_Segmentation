@@ -97,13 +97,13 @@ def get_arguments():
                         help='Tensor normalization: options ,max_min,',
                         choices=('max_min', 'full_volume_mean', 'brats', 'max', 'mean'))
     parser.add_argument('--split', default=0.8, type=float, help='Select percentage of training data(default: 0.8)')
-    parser.add_argument('--lr', default=1e-4, type=float,
+    parser.add_argument('--lr', default=1e-3, type=float,
                         help='learning rate (default: 1e-3)')
     parser.add_argument('--loadData', default=False)
     parser.add_argument('--cuda', action='store_true', default=True)
     parser.add_argument("--reload_path", type=str, default='E:/HSE/Medical_Segmentation/saved_models/'
-                                                           'RESUNETOGT_checkpoints/RESUNETOGT_1026_1548_thyroid/'
-                                                           'RESUNETOGT_1026_1548_thyroid_BEST.pth')
+                                                           'RESUNETOGT_checkpoints/RESUNETOGT_1026_2157_thyroid/'
+                                                           'RESUNETOGT_1026_2157_thyroid_BEST.pth')
     parser.add_argument("--resume", type=str2bool, default=False)
     # parser.add_argument('--resume', default='', type=str, metavar='PATH',
     #                     help='path to latest checkpoint (default: none)')

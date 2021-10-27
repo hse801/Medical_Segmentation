@@ -29,7 +29,8 @@ def save_arguments(args, path):
 
 def datestr():
     now = time.localtime()
-    return '{:02}_{:02}___{:02}_{:02}'.format(now.tm_hour, now.tm_min, now.tm_mon, now.tm_mday)
+    # return '{:02}_{:02}___{:02}_{:02}'.format(now.tm_hour, now.tm_min, now.tm_mon, now.tm_mday)
+    return '{:02}{:02}_{:02}{:02}'.format(now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min)
 
 
 def shuffle_lists(*ls, seed=777):

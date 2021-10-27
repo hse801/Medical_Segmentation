@@ -122,12 +122,12 @@ def predictor(PATH, data_loader, model_path, csv_name, save_folder, mode='test')
 
             pred = pred.squeeze()
             output_arr = pred.cpu().numpy()
-            print(f'output_arr type = {type(output_arr)}, output_arr size = {np.shape(output_arr)}')
+            # print(f'output_arr type = {type(output_arr)}, output_arr size = {np.shape(output_arr)}')
             print(f'output_arr min = {np.min(output_arr)}, output_arr max = {np.max(output_arr)}')
 
             # file_name1 = f'pred_2ch_1_{batch_idx}.nii.gz'
             # file_name2 = f'pred_2ch_2_{batch_idx}.nii.gz'
-            file_name = f'pred_09_27_09_16_{batch_idx}.nii.gz'
+            file_name = f'pred_RESUNET_{batch_idx}.nii.gz'
 
             # set threshold to the predicted image
             output_arr = np.where(output_arr > 0, 1, 0)
@@ -147,7 +147,7 @@ def predictor(PATH, data_loader, model_path, csv_name, save_folder, mode='test')
             os.chdir(path_list[batch_idx])
             # sitk.WriteImage(output_img_1[:, :, :], file_name1)
             # sitk.WriteImage(output_img_2[:, :, :], file_name2)
-            # sitk.WriteImage(output_combined[:, :, :], file_name)
+            sitk.WriteImage(output_combined[:, :, :], file_name)
             print(f'{file_name} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'pred type = {pred.type()}, pred size = {pred.size()}')
@@ -160,17 +160,25 @@ def predictor(PATH, data_loader, model_path, csv_name, save_folder, mode='test')
     # Add row of Mean value of each metrics
     os.chdir(PATH + save_folder)
     eval_df.loc['Mean'] = eval_df.mean()
+    eval_df.loc['Median'] = eval_df.median()
+    eval_df.loc['Std'] = eval_df.std()
     print(eval_df)
     print(eval_df.loc['Mean'])
     eval_df.to_csv(PATH + csv_name, mode='w')
     print(f'Evaluation csv saved in {os.getcwd()}')
+
+    print('End of validation')
+    print(f'len(primary_dice) = {len(primary_dice)}, len(lymph_dice) = {len(lymph_dice)}')
+    print(
+        f'Total DSC: {(sum(primary_dice) + sum(lymph_dice)) / (len(primary_dice) + len(lymph_dice)):.4f}      '
+        f'Primary: {sum(primary_dice) / len(primary_dice):.4f}     Lymph: {sum(lymph_dice) / len(lymph_dice):.4f}')
 
 
 _, _, pred_loader = dataloaders.lung_dataloader.generate_lung_dataset()
 PATH = 'E:/HSE/Medical_Segmentation/saved_models/RESUNETOGL_checkpoints/'
 model_path = 'RESUNETOGL_09_27___09_16_lung_/RESUNETOGL_09_27___09_16_lung__BEST.pth'
 save_folder = 'RESUNETOGL_09_27___09_16_lung_/'
-csv_name = '/prediction_BEST.csv'
+csv_name = 'prediction_test_BEST.csv'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__last_epoch.pth'
 

@@ -107,10 +107,15 @@ valid_pet_path = glob.glob('E:/HSE/LungCancerData/valid/*/PET_cut.nii.gz')
 train_folder_path = glob.glob('E:/HSE/LungCancerData/train/*/')
 valid_folder_path = glob.glob('E:/HSE/LungCancerData/valid/*/')
 
+test_ct_path = glob.glob('E:/HSE/LungCancerData/test/*/CT_cut.nii.gz')
+test_pet_path = glob.glob('E:/HSE/LungCancerData/test/*/PET_cut.nii.gz')
+test_folder_path = glob.glob('E:/HSE/LungCancerData/test/*/')
+
 
 train_ds = Lung_dataset(train_ct_path[0:780], train_pet_path[0:780], train_folder_path[0:780], test_flag=0)
 val_ds = Lung_dataset(valid_ct_path[0:70], valid_pet_path[0:70], valid_folder_path[0:70], test_flag=1)
-pred_ds = Lung_dataset(valid_ct_path[0:70], valid_pet_path[0:70], valid_folder_path[0:70], test_flag=1)
+# pred_ds = Lung_dataset(valid_ct_path[0:70], valid_pet_path[0:70], valid_folder_path[0:70], test_flag=1)
+pred_ds = Lung_dataset(test_ct_path[0:80], test_pet_path[0:80], test_folder_path[0:80], test_flag=1)
 
 
 def generate_lung_dataset():

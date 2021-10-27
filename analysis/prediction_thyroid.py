@@ -26,7 +26,8 @@ Also create nii file of the predicion image
 
 def predictor(PATH, data_loader, model_path, csv_name, save_folder):
 
-    path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
+    # path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
+    path_list = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/')
     model_path = PATH + model_path
     # model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=24)
     model = medzoo.ResidualUNet3D(in_channels=1, out_channels=1)
@@ -93,28 +94,29 @@ def predictor(PATH, data_loader, model_path, csv_name, save_folder):
 
             # pred = pred.squeeze()
             # pred_arr = pred.cpu().numpy()
-            print(f'pred_arr type = {type(pred_arr)}, pred_arr size = {np.shape(pred_arr)}')
+            # print(f'pred_arr type = {type(pred_arr)}, pred_arr size = {np.shape(pred_arr)}')
             print(f'pred_arr min = {np.min(pred_arr)}, pred_arr max = {np.max(pred_arr)}')
 
-            file_name = f'pred_RESUNET_{batch_idx}.nii.gz'
+            file_name = f'pred_18_41_10_16_{batch_idx}.nii.gz'
 
             # print(f'output_img type = {type(output_img)}, output_img size = {output_img.size()}')
             os.chdir(path_list[batch_idx])
-            # sitk.WriteImage(pred_arr[:, :, :], file_name)
+            pred_img = sitk.GetImageFromArray(pred_arr[:, :, :])
+            sitk.WriteImage(pred_img[:, :, :], file_name)
             print(f'{file_name} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'pred type = {pred.type()}, pred size = {pred.size()}')
         # break
     print(f'Evaluation dataframe: ')
     eval_df = pd.DataFrame(eval_list, columns=['dice_p', 'recall', 'precision', 'fscore',
-                                                'hausdorff_distance', 'hausdorff_distance_95'])
+                                            'hausdorff_distance', 'hausdorff_distance_95'])
     # Add row of Mean value of each metrics
     eval_df.loc['Mean'] = eval_df.mean()
     eval_df.loc['Median'] = eval_df.median()
     eval_df.loc['Std'] = eval_df.std()
     print(eval_df)
     print(eval_df.loc['Mean'])
-    os.chdir(PATH + save_folder)
+    # os.chdir(PATH + save_folder)
     eval_df.to_csv(PATH + save_folder + csv_name, mode='w')
     print(f'Evaluation csv saved in {os.getcwd()}')
     print('End of validation')
@@ -124,7 +126,8 @@ _, _, pred_loader = dataloaders.thyroid_dataloader.generate_thyroid_dataset()
 PATH = 'E:/HSE/Medical_Segmentation/saved_models/RESUNETOG_checkpoints/'
 model_path = 'RESUNETOG_18_41___10_16_thyroid_/RESUNETOG_18_41___10_16_thyroid__BEST.pth'
 save_folder = 'RESUNETOG_18_41___10_16_thyroid_/'
-csv_name = 'prediction_BEST.csv'
+# save_folder = 'RESUNETOGT_1023_1235_thyroid/'
+csv_name = 'prediction_BEST_0902_2.csv'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__last_epoch.pth'
 

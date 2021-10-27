@@ -1,9 +1,69 @@
 import importlib
 import torch.nn as nn
-from lib.medzoo.Unet3D_OG.building_blocks import DoubleConv, ExtResNetBlock, create_encoders, \
-    create_decoders
+# from lib.medzoo.Unet3D_OG.building_blocks import DoubleConv, ExtResNetBlock, create_encoders, \
+#     create_decoders
 from lib.medzoo.Unet3D_OG.utils import number_of_features_per_level
 from lib.medzoo.BaseModelClass import BaseModel
+import torch
+from lib.medzoo.Unet3D_OG.building_blocks import DoubleConv, ExtResNetBlock, create_encoders, \
+    create_decoders
+
+
+class ASPP(nn.Module):
+    """
+    3D Astrous Spatial Pyramid Pooling
+    Code modified from https://github.com/lvpeiqing/SAR-U-Net-liver-segmentation/blob/master/models/se_p_resunet/se_p_resunet.py
+    """
+    def __init__(self, in_dims, out_dims, rate=[6, 12, 18]):
+        super(ASPP, self).__init__()
+
+        self.pool = nn.MaxPool3d(3)
+        self.aspp_block1 = nn.Sequential(
+            nn.Conv3d(
+                in_dims, out_dims, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(rate[0], rate[0], rate[0]),
+                dilation=(rate[0], rate[0], rate[0])
+            ),
+            nn.PReLU(),
+            # nn.BatchNorm3d(out_dims),
+            nn.GroupNorm(8, out_dims)
+        )
+        self.aspp_block2 = nn.Sequential(
+            nn.Conv3d(
+                in_dims, out_dims, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(rate[1], rate[1], rate[1]),
+                dilation=(rate[1], rate[1], rate[1])
+            ),
+            nn.PReLU(),
+            # nn.BatchNorm3d(out_dims),
+            nn.GroupNorm(8, out_dims)
+        )
+        self.aspp_block3 = nn.Sequential(
+            nn.Conv3d(
+                in_dims, out_dims, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(rate[2], rate[2], rate[2]),
+                dilation=(rate[2], rate[2], rate[2])
+            ),
+            nn.PReLU(),
+            # nn.BatchNorm3d(out_dims),
+            nn.GroupNorm(8, out_dims)
+        )
+
+        self.output = nn.Conv3d(len(rate) * out_dims, out_dims, kernel_size=(1, 1, 1))
+        self._init_weights()
+
+    def forward(self, x):
+        x = self.pool(x)
+        x1 = self.aspp_block1(x)
+        x2 = self.aspp_block2(x)
+        x3 = self.aspp_block3(x)
+        out = torch.cat([x1, x2, x3], dim=1)
+        return self.output(out)
+
+    def _init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight)
+            elif isinstance(m, nn.GroupNorm):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
 
 
 class Abstract3DUNet(BaseModel):
@@ -133,8 +193,8 @@ class ResidualUNet3D(Abstract3DUNet):
      'gcr' -> groupnorm + conv + ReLU
     """
 
-    def __init__(self, in_channels, out_channels, final_sigmoid=True, f_maps=36, layer_order='gcr',
-                 num_groups=4, num_levels=4, is_segmentation=True, conv_padding=1, **kwargs):
+    def __init__(self, in_channels, out_channels, final_sigmoid=True, f_maps=64, layer_order='gcr',
+                 num_groups=4, num_levels=5, is_segmentation=True, conv_padding=1, **kwargs):
         super(ResidualUNet3D, self).__init__(in_channels=in_channels,
                                              out_channels=out_channels,
                                              final_sigmoid=final_sigmoid,

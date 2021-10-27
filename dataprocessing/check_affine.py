@@ -5,11 +5,12 @@ import os
 import numpy as np
 from scipy.interpolate import interpn
 
-path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/SPECT.nii.gz')
+# path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/crop_ct.nii.gz')
+path_list = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/crop_ct.nii.gz')
 src_img = nb.load(path_list[0])
 src_img_data = src_img.get_fdata()
 print(f'affine = {src_img.affine}')
-nb.save(nb.Nifti1Pair(src_img_data, src_img.affine), 'affine_spect.nii.gz')
+# nb.save(nb.Nifti1Pair(src_img_data, src_img.affine), 'affine_spect.nii.gz')
 
 
 # src_img = sitk.ReadImage(path_list[0])

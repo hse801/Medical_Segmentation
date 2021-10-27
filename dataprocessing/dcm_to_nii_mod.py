@@ -80,7 +80,7 @@ def reverse_along_axis(data: np.array, axis: int):
     return data
 
 
-def resample_nb(src_file: str, dst_file: str, ref_file: str, save_path: str):
+def resample_nb(src_file: str, dst_file: str, ref_file: str, save_path: str, mask=False):
     # print(f'nii_resize_image: src={src_file}\n dst={dst_file}\n ref={ref_file}')
     src_img = nb.load(src_file)
     ref_img = nb.load(ref_file)
@@ -112,12 +112,23 @@ def resample_nb(src_file: str, dst_file: str, ref_file: str, save_path: str):
         print(f'{dst_file} already exists. will overwrite')
     src_resize_data = src_resize_data.swapaxes(0, 1)
     src_resize_data = src_resize_data[:, ::-1, :]
+    z_slice_num = len(src_resize_data[0, 0, :])
 
     os.chdir(f)
-    nb.save(nb.Nifti1Pair(src_resize_data, ref_img.affine), dst_file)
+    if mask:
+        nb.save(nb.Nifti1Pair(src_resize_data[:, :, :], ref_img.affine), dst_file)
+    else:
+        nb.save(nb.Nifti1Pair(src_resize_data[:, :, z_slice_num - 128:], ref_img.affine), dst_file)
     print(f'Resampled file {dst_file} saved in {os.getcwd()}')
 
     return src_resize_data
+
+
+def crop_mask(src_file: str, dst_file: str):
+    src_img = nb.load(src_file)
+    src_img_data = src_img.get_fdata()
+    z_slice_num = len(src_img_data[0, 0, :])
+    nb.save(nb.Nifti1Pair(src_img_data[:, :, z_slice_num - 128:], src_img.affine), dst_file)
 
 
 def resample_sitk(src_file: str, ref_file: str, dst_file_name: str, save_path):
@@ -154,10 +165,12 @@ def resample_sitk(src_file: str, ref_file: str, dst_file_name: str, save_path):
 
     mesh_points = np.rollaxis(mesh_pet, 0, 4)
     mesh_points = np.rollaxis(mesh_points, 0, 2)
-    interp = interpn((z_src, y_src, x_src), img_src_data[:, :, ::-1],
+    # interp = interpn((z_src, y_src, x_src), img_src_data[:, :, ::-1],
+    #                  mesh_points, bounds_error=False, fill_value=-1024)
+    interp = interpn((z_src, y_src, x_src), img_src_data[:, :, :],
                      mesh_points, bounds_error=False, fill_value=-1024)
 
-    src_rsmpl_img = sitk.GetImageFromArray(interp[:, :, ::-1])
+    src_rsmpl_img = sitk.GetImageFromArray(interp[:, :, :])
     src_rsmpl_img.CopyInformation(img_ref[:, :, :])
 
     os.chdir(save_path)
@@ -196,24 +209,23 @@ for f in file_path:
     mask_nii = glob.glob(f + 'Q.Metrix Organs/*.nii.gz')
     spect_nii = glob.glob(f + 'Q.Metrix_Transaxials_IsotropNM/*.nii.gz')
 
-    resize_arr, affine = pad_img(mask_nii[0], img_dim=256, save_path=f)
-    ref_interp = f + 'MASK_rsmpl.nii.gz'
+    # resize_arr, affine = pad_img(mask_nii[0], img_dim=256, save_path=f)
+    ref_interp = mask_nii[0]
     ref_interp_img = nb.load(ref_interp)
     ref_affine = ref_interp_img.affine
     # print(f'ref interp affine = {ref_affine}')
 
-    # resample_sitk(src_file=ct_nii[0], ref_file=ref_interp, dst_file_name='CT_rsmpl.nii.gz', save_path=f)
-    # resample_sitk(src_file=spect_nii[0], ref_file=ref_interp, dst_file_name='SPECT_rsmpl.nii.gz', save_path=f)
+    # resample_sitk(src_file=ct_nii[0], ref_file=ref_interp, dst_file_name='CT_rsmpl2.nii.gz', save_path=f)
+    # resample_sitk(src_file=spect_nii[0], ref_file=ref_interp, dst_file_name='SPECT_rsmpl2.nii.gz', save_path=f)
 
     # src_img = nb.load(spect_nii[0])
     # affine = src_img.affine
     # src_img_data = src_img.get_fdata()
-
-
-    ct_arr = resample_nb(src_file=ct_nii[0], dst_file='CT_rsmpl2.nii.gz', ref_file=f + 'MASK_rsmpl2.nii.gz', save_path=f)
-    spect_arr = resample_nb(src_file=spect_nii[0], dst_file='SPECT_rsmpl2.nii.gz', ref_file=f + 'MASK_rsmpl2.nii.gz', save_path=f)
+    mask_arr = resample_nb(src_file=mask_nii[0], dst_file='MASK_rsmpl2.nii.gz', ref_file=mask_nii[0], save_path=f, mask=False)
+    ct_arr = resample_nb(src_file=ct_nii[0], dst_file='CT_rsmpl2.nii.gz', ref_file=mask_nii[0], save_path=f, mask=False)
+    spect_arr = resample_nb(src_file=spect_nii[0], dst_file='SPECT_rsmpl2.nii.gz', ref_file=mask_nii[0], save_path=f, mask=False)
+    crop_mask(src_file=f+'MASK_rsmpl2.nii.gz', dst_file=f+'MASK_rsmpl2.nii.gz')
     # mask_arr = resample_nb(src_file=mask_nii[0], dst_file='MASK_rsmpl2.nii.gz', ref_file=f + 'MASK_rsmpl.nii.gz', save_path=f)
-
     # pad_arr(src_img_data, ref_affine=affine, img_dim=256, save_path=f, file_name='SPECT_rsmpl3.nii.gz')
     # pad_arr(ct_arr, ref_affine=affine, img_dim=256, save_path=f, file_name='CT_rsmpl3.nii.gz')
     # pad_arr(mask_arr, ref_affine=affine, img_dim=256, save_path=f, file_name='MASK_rsmpl3.nii.gz')

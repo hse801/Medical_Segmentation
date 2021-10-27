@@ -1,3 +1,8 @@
+import torch.nn as nn
+import torch
+from torchsummary import summary
+import torchsummaryX
+from lib.medzoo.BaseModelClass import BaseModel
 from functools import partial
 import torch
 from torch import nn as nn
@@ -87,54 +92,15 @@ class SingleConv(nn.Sequential):
     def __init__(self, in_channels, out_channels, kernel_size=3, order='gcr', num_groups=8, padding=1):
         super(SingleConv, self).__init__()
 
+        modules = []
+        modules.append(nn.Conv3d(in_channels, out_channels, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=True))
+        modules.append(nn.GroupNorm(num_groups=num_groups, num_channels=num_channels))
+        modules.append(nn.ReLU(inplace=True))
+
         for name, module in create_conv(in_channels, out_channels, kernel_size, order, num_groups, padding=padding):
             self.add_module(name, module)
 
 
-class DoubleConv(nn.Sequential):
-    """
-    A module consisting of two consecutive convolution layers (e.g. BatchNorm3d+ReLU+Conv3d).
-    We use (Conv3d+ReLU+GroupNorm3d) by default.
-    This can be changed however by providing the 'order' argument, e.g. in order
-    to change to Conv3d+BatchNorm3d+ELU use order='cbe'.
-    Use padded convolutions to make sure that the output (H_out, W_out) is the same
-    as (H_in, W_in), so that you don't have to crop in the decoder path.
-    Args:
-        in_channels (int): number of input channels
-        out_channels (int): number of output channels
-        encoder (bool): if True we're in the encoder path, otherwise we're in the decoder
-        kernel_size (int or tuple): size of the convolving kernel
-        order (string): determines the order of layers, e.g.
-            'cr' -> conv + ReLU
-            'crg' -> conv + ReLU + groupnorm
-            'cl' -> conv + LeakyReLU
-            'ce' -> conv + ELU
-        num_groups (int): number of groups for the GroupNorm
-        padding (int or tuple): add zero-padding added to all three sides of the input
-    """
-
-    def __init__(self, in_channels, out_channels, encoder, kernel_size=3, order='gcr', num_groups=8, padding=1):
-        super(DoubleConv, self).__init__()
-        if encoder:
-            # we're in the encoder path
-            conv1_in_channels = in_channels
-            conv1_out_channels = out_channels // 2
-            if conv1_out_channels < in_channels:
-                conv1_out_channels = in_channels
-            conv2_in_channels, conv2_out_channels = conv1_out_channels, out_channels
-        else:
-            # we're in the decoder path, decrease the number of channels in the 1st convolution
-            conv1_in_channels, conv1_out_channels = in_channels, out_channels
-            conv2_in_channels, conv2_out_channels = out_channels, out_channels
-
-        # conv1
-        self.add_module('SingleConv1',
-                        SingleConv(conv1_in_channels, conv1_out_channels, kernel_size, order, num_groups,
-                                   padding=padding))
-        # conv2
-        self.add_module('SingleConv2',
-                        SingleConv(conv2_in_channels, conv2_out_channels, kernel_size, order, num_groups,
-                                   padding=padding))
 
 
 class ExtResNetBlock(nn.Module):
@@ -254,24 +220,18 @@ class Decoder(nn.Module):
         upsample (boole): should the input be upsampled
     """
 
-    def __init__(self, in_channels, out_channels, conv_kernel_size=3, scale_factor=(2, 2, 2), basic_module=DoubleConv,
+    def __init__(self, in_channels, out_channels, conv_kernel_size=3, scale_factor=(2, 2, 2), basic_module=ExtResNetBlock,
                  conv_layer_order='gcr', num_groups=8, mode='nearest', padding=1, upsample=True):
         super(Decoder, self).__init__()
 
         if upsample:
-            if basic_module == DoubleConv:
-                # if DoubleConv is the basic_module use interpolation for upsampling and concatenation joining
-                self.upsampling = InterpolateUpsampling(mode=mode)
-                # concat joining
-                self.joining = partial(self._joining, concat=True)
-            else:
-                # if basic_module=ExtResNetBlock use transposed convolution upsampling and summation joining
-                self.upsampling = TransposeConvUpsampling(in_channels=in_channels, out_channels=out_channels,
-                                                          kernel_size=conv_kernel_size, scale_factor=scale_factor)
-                # sum joining
-                self.joining = partial(self._joining, concat=False)
-                # adapt the number of in_channels for the ExtResNetBlock
-                in_channels = out_channels
+            # if basic_module=ExtResNetBlock use transposed convolution upsampling and summation joining
+            self.upsampling = TransposeConvUpsampling(in_channels=in_channels, out_channels=out_channels,
+                                                      kernel_size=conv_kernel_size, scale_factor=scale_factor)
+            # sum joining
+            self.joining = partial(self._joining, concat=False)
+            # adapt the number of in_channels for the ExtResNetBlock
+            in_channels = out_channels
         else:
             # no upsampling
             self.upsampling = NoUpsampling()
@@ -311,70 +271,12 @@ class Decoder(nn.Module):
             return encoder_features + x
 
 
-class ASPP(nn.Module):
-    """
-    3D Astrous Spatial Pyramid Pooling
-    Code modified from https://github.com/lvpeiqing/SAR-U-Net-liver-segmentation/blob/master/models/se_p_resunet/se_p_resunet.py
-    """
-    def __init__(self, in_dims, out_dims, rate=[6, 12, 18]):
-        super(ASPP, self).__init__()
-
-        self.pool = nn.MaxPool3d(3)
-        self.aspp_block1 = nn.Sequential(
-            nn.Conv3d(
-                in_dims, out_dims, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(rate[0], rate[0], rate[0]),
-                dilation=(rate[0], rate[0], rate[0])
-            ),
-            nn.PReLU(),
-            # nn.BatchNorm3d(out_dims),
-            nn.GroupNorm(8, out_dims)
-        )
-        self.aspp_block2 = nn.Sequential(
-            nn.Conv3d(
-                in_dims, out_dims, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(rate[1], rate[1], rate[1]),
-                dilation=(rate[1], rate[1], rate[1])
-            ),
-            nn.PReLU(),
-            # nn.BatchNorm3d(out_dims),
-            nn.GroupNorm(8, out_dims)
-        )
-        self.aspp_block3 = nn.Sequential(
-            nn.Conv3d(
-                in_dims, out_dims, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(rate[2], rate[2], rate[2]),
-                dilation=(rate[2], rate[2], rate[2])
-            ),
-            nn.PReLU(),
-            # nn.BatchNorm3d(out_dims),
-            nn.GroupNorm(8, out_dims)
-        )
-
-        self.output = nn.Conv3d(len(rate) * out_dims, out_dims, kernel_size=(1, 1, 1))
-        self._init_weights()
-
-    def forward(self, x):
-        x = self.pool(x)
-        x1 = self.aspp_block1(x)
-        x2 = self.aspp_block2(x)
-        x3 = self.aspp_block3(x)
-        out = torch.cat([x1, x2, x3], dim=1)
-        return self.output(out)
-
-    def _init_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Conv3d):
-                nn.init.kaiming_normal_(m.weight)
-            elif isinstance(m, nn.GroupNorm):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
-
-
 def create_encoders(in_channels, f_maps, basic_module, conv_kernel_size, conv_padding, layer_order, num_groups,
                     pool_kernel_size):
     # create encoder path consisting of Encoder modules. Depth of the encoder is equal to `len(f_maps)`
     encoders = []
     for i, out_feature_num in enumerate(f_maps):
         # print(f'building blocks: fmaps = {f_maps}, i = {i}, len = {len(f_maps)}')
-        # building blocks: fmaps = [64, 128, 256, 512, 1024], i = 0, len = 5
         if i == 0:
             encoder = Encoder(in_channels, out_feature_num,
                               apply_pooling=False,  # skip pooling in the first encoder
@@ -383,10 +285,6 @@ def create_encoders(in_channels, f_maps, basic_module, conv_kernel_size, conv_pa
                               conv_kernel_size=conv_kernel_size,
                               num_groups=num_groups,
                               padding=conv_padding)
-        # elif i == len(f_maps) - 1:
-        #     print(f'last layer of encoder with aspp block')
-        #     encoder = ASPP(f_maps[i - 1], out_feature_num)
-
         else:
             # TODO: adapt for anisotropy in the data, i.e. use proper pooling kernel to make the data isotropic after 1-2 pooling operations
             encoder = Encoder(f_maps[i - 1], out_feature_num,
@@ -494,3 +392,163 @@ class NoUpsampling(AbstractUpsampling):
     @staticmethod
     def _no_upsampling(x, size):
         return x
+
+
+# DenseUnet
+class conv_block(nn.Module):
+    def __init__(self, ch_in, grow_rate):
+        super(conv_block, self).__init__()
+        self.conv1 = single_conv(ch_in, grow_rate)
+        self.conv2 = single_conv(ch_in + grow_rate, grow_rate)
+        # self.drop = nn.Dropout(p = drop_rate)
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x2 = torch.cat((x, x1), dim=1)
+        x3 = self.conv2(x2)
+        out = torch.cat((x2, x3), dim=1)
+        # out = self.drop(out)
+
+        return out
+
+
+class conv_bridge_block(nn.Module):
+    def __init__(self, ch_in, grow_rate):
+        super(conv_bridge_block, self).__init__()
+        self.conv1 = single_conv(ch_in, grow_rate)
+        self.conv2 = single_conv(ch_in + grow_rate, grow_rate)
+        self.conv3 = single_conv(ch_in + grow_rate * 2, grow_rate)
+        # self.drop = nn.Dropout(p = drop_rate)
+
+    def forward(self, x):
+        x1 = self.conv1(x)
+        x2 = torch.cat((x, x1), dim=1)
+        x3 = self.conv2(x2)
+        x4 = torch.cat((x2, x3), dim=1)
+        x5 = self.conv3(x4)
+        out = torch.cat((x4, x5), dim=1)
+        # out = self.drop(out)
+
+        return out
+
+
+class ConvBlock(nn.Module):
+    def __init__(self, ch_in, ch_out):
+        super(ConvBlock, self).__init__()
+        self.Conv = nn.Sequential(
+            nn.Conv3d(ch_in, ch_out, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=True),
+            nn.GroupNorm(num_groups=num_groups, num_channels=num_channels),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self, x):
+        x = self.conv(x)
+        return x
+
+
+class EncoderBlock(nn.Module):
+    def __init__(self, ch_in, ch_out, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1),
+                 dilation=(1, 1, 1), bias=False, weight_std=False, first_layer=False):
+        super(EncoderBlock, self).__init__()
+        self.conv1 = Co
+
+
+"""
+class single_b_conv(nn.Module):
+    def __init__(self,ch_in,ch_out):
+        super(single_conv,self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv3d(ch_in, ch_out, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.BatchNorm3d(ch_out),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self,x):
+        x = self.conv(x)
+        return x
+"""
+
+
+class up_conv(nn.Module):
+    def __init__(self, ch_in, ch_out):
+        super(up_conv, self).__init__()
+        self.up = nn.Sequential(
+            nn.Upsample(scale_factor=(1, 2, 2), mode='trilinear'),
+            nn.Conv3d(ch_in, ch_out, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=True),
+            nn.BatchNorm3d(ch_out),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self, x):
+        x = self.up(x)
+        return x
+
+
+class U_Net(nn.Module):
+    def __init__(self, in_dim=2, out_dim=1):
+        super(U_Net, self).__init__()
+
+        self.Maxpool = nn.MaxPool3d(kernel_size=(1, 2, 2), stride=(1, 2, 2))
+
+        self.Conv1 = conv_block(ch_in=in_dim, grow_rate=31)  # 2 + 31 + 31 = 64
+        self.drop1 = nn.Dropout(p=0.1)
+        self.Conv2 = conv_block(ch_in=64, grow_rate=32)  # 64 + 32 + 32 = 128
+        self.drop2 = nn.Dropout(p=0.1)
+        self.Conv3 = conv_block(ch_in=128, grow_rate=64)  # 128 + 64 + 64 = 256
+        self.drop3 = nn.Dropout(p=0.1)
+
+        # self.bridge = conv_block(ch_in=256,grow_rate=128) # 256 + 128 + 128 = 512
+        self.bridge = conv_bridge_block(ch_in=256, grow_rate=128)  # 256 + 128 + 128 = 512
+
+        self.Up1 = up_conv(ch_in=640, ch_out=256)
+        self.Up_conv1 = conv_block(ch_in=512, grow_rate=128)
+
+        self.Up2 = up_conv(ch_in=768, ch_out=128)
+        self.Up_conv2 = conv_block(ch_in=256, grow_rate=64)  # 256 + 64 + 64 = 384
+
+        self.Up3 = up_conv(ch_in=384, ch_out=64)
+        self.Up_conv3 = conv_block(ch_in=128, grow_rate=32)  # 128 + 32 + 32 = 192
+
+        self.Conv_1x1 = nn.Conv3d(192, out_dim, kernel_size=1, stride=1, padding=0)
+        self.sigmoid = nn.Sigmoid()
+
+        for m in self.modules():
+            if isinstance(m, nn.Conv3d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity="relu")
+            elif isinstance(m, nn.BatchNorm3d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+
+    def forward(self, x):
+        # encoding path
+        d1 = self.Conv1(x)
+
+        d2 = self.Maxpool(d1)
+        d2 = self.drop1(d2)
+        d2 = self.Conv2(d2)
+
+        d3 = self.Maxpool(d2)
+        d3 = self.drop2(d3)
+        d3 = self.Conv3(d3)
+
+        d4 = self.Maxpool(d3)
+        d4 = self.drop3(d4)
+
+        bridge = self.bridge(d4)
+
+        u1 = self.Up1(bridge)
+        u1 = torch.cat((d3, u1), dim=1)
+        u1 = self.Up_conv1(u1)
+
+        u2 = self.Up2(u1)
+        u2 = torch.cat((d2, u2), dim=1)
+        u2 = self.Up_conv2(u2)
+
+        u3 = self.Up3(u2)
+        u3 = torch.cat((d1, u3), dim=1)
+        u3 = self.Up_conv3(u3)
+
+        out = self.Conv_1x1(u3)
+        out = self.sigmoid(out)
+
+        return out

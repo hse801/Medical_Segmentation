@@ -5,13 +5,14 @@ import tables
 import SimpleITK as sitk
 import glob
 import torch
+
 '''
 Code to view the nii file in mricro with same origin/voxel size
 Just Temporary
-For Lung cancer data
+For Thyroid data
 '''
 # data_path = glob.glob('F:/LungCancerData/test/*/')
-data_path = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/crop_ct.nii.gz')
+data_path = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/')
 
 
 def resave_file(file_path, save_path):
@@ -27,14 +28,14 @@ def resave_file(file_path, save_path):
 
 
 for f in data_path:
-    lymph_path = f + 'lymph_cut_sum.nii.gz'
-    roi_path = f + 'ROI_cut.nii.gz'
-    if os.path.isfile(lymph_path):
-        resave_file(file_path=lymph_path, save_path=f)
+    # lymph_path = f + 'lymph_cut_sum.nii.gz'
+    ct_path = f + 'crop_ct.nii.gz'
+    if os.path.isfile(ct_path):
+        resave_file(file_path=ct_path, save_path=f)
     else:
-        print('No lymph file!')
-    if os.path.isfile(roi_path):
-        resave_file(file_path=roi_path, save_path=f)
-    else:
-        print('No primary file!')
-    # break
+        print('No thyroid ct file!')
+    # if os.path.isfile(roi_path):
+    #     resave_file(file_path=roi_path, save_path=f)
+    # else:
+    #     print('No primary file!')
+    break

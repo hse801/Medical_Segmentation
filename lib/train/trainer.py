@@ -48,7 +48,6 @@ class Trainer:
                                            optimizer=self.optimizer)
 
             self.writer.write_end_of_epoch(epoch)
-
             self.writer.reset('train')
             self.writer.reset('val')
 
@@ -58,7 +57,7 @@ class Trainer:
         for batch_idx, input_tuple in enumerate(self.train_data_loader):
 
             self.optimizer.zero_grad()
-
+            # input_tensor, target = input_tuple
             input_tensor, target = prepare_input(input_tuple=input_tuple, args=self.args)
             input_tensor.requires_grad = True
             # print(f'trainer.py: input_tensor size = {input_tensor.size()}')

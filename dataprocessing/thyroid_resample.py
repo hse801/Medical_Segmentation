@@ -19,6 +19,8 @@ for f in file_path:
     mask_list = glob.glob(f + 'Q.Metrix Organs/*.DCM')
     spect_list = glob.glob(f + 'Q.Metrix_Transaxials_IsotropNM/*.DCM')
 
+    # CT는 슬라이스 수만큼 DCM 파일 존재
+    # Mask and SPECT each have 1 DCM file
     if len(ct_list) == 0:
         raise Exception('No CT files')
 
