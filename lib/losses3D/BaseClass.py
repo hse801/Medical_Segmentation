@@ -61,7 +61,7 @@ class _AbstractDiceLoss(nn.Module):
             print("Target {} after skip index {}".format(before_size, target.size()))
 
         # print(f'Baseclass.py: input.size() = {input.size()}, target.size() = {target.size()}')
-        assert input.size() == target.size(), "'input' and 'target' must have the same shape"
+        # assert input.size() == target.size(), "'input' and 'target' must have the same shape"
         # get probabilities from logits
         input = self.normalization(input)
 

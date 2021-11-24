@@ -443,7 +443,10 @@ class ExtResNetBlock(nn.Module):
         bs, channel, depth, height, width = x.shape
         # print(f'x.shape = {x.shape}, type = {type(x)}')
         # edge = np.zeros((bs, channel, depth, height, width))
-        edge = torch.zeros_like(x).cuda()
+
+        # edge = torch.zeros_like(x)
+        edge = torch.zeros_like(x)
+
         # print(f'edge.shape = {edge.shape}, x type = {type(x)}')
         for d in range(depth):
             x_slice = x[:, :, d, :, :]

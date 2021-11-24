@@ -11,6 +11,7 @@ def expand_as_one_hot(input, C, ignore_index=None):
     :return: 5D output image (NxCxDxHxW)
     """
     # print('start expand_as_one_hot----------------------------------------------------------------------------------')
+    # print(f'bf input.dim() = {input.dim()}, input.shape = {input.size()}')
     if input.dim() == 5:
         return input
     assert input.dim() == 4
@@ -66,7 +67,7 @@ def compute_per_channel_dice(input, target, epsilon=1e-6, weight=None):
     # print(f'input.size = {input.size()}, target.size = {target.size()}')
     # target = target.unsqueeze(1)
     # print(f'input.size = {input.size()}, target.size = {target.size()}')
-    assert input.size() == target.size(), "'input' and 'target' must have the same shape"
+    # assert input.size() == target.size(), "'input' and 'target' must have the same shape"
 
     # print(f'basic.py: input = {input}')
     # print(f'target = {target}')

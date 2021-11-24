@@ -5,7 +5,7 @@ import torch.nn as nn
 from lib.medzoo.Unet3D_OG.utils import number_of_features_per_level
 from lib.medzoo.BaseModelClass import BaseModel
 import torch
-from lib.medzoo.Unet3D_OG.building_blocks import DoubleConv, ExtResNetBlock, create_encoders, \
+from lib.medzoo.Unet3D_OG.building_blocks_edge import DoubleConv, ExtResNetBlock, create_encoders, \
     create_decoders
 
 

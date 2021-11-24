@@ -5,6 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 import lib.utils as utils
 
 dict_class_names = {"thyroid": ["thyroid"],
+                    "thyroid_lr": ["left", "right"],
                     "lung": ["primary", "lymph"],
                     "iseg2017": ["Air", "CSF", "GM", "WM"],
                     "iseg2019": ["Air", "CSF", "GM", "WM"],

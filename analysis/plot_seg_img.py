@@ -21,11 +21,11 @@ saved as .jpg file
 TP, FP, FN, FP values are assigned as RGB code
 
 """
-path_list = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/32710210/Tc Thyroid SPECT/')
+path_list = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/32906941/Tc Thyroid SPECT/')
 
 # def create_pred_img()
 for path in path_list:
-    slice_num = 31
+    slice_num = 27
     # file_name = 'RESUNET.jpg'
     # pred_file = glob.glob(path + '1026_2157*')
 

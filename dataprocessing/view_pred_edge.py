@@ -26,12 +26,11 @@ Also create nii file of the predicion image
 
 def predictor(PATH, data_loader, model_path, csv_name, save_folder):
 
-    path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
-    # path_list = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/')
+    # path_list = glob.glob('E:/HSE/Thyroid/Dicom/*/')
+    path_list = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/')
     model_path = PATH + model_path
     # model = medzoo.UNet3D(in_channels=1, n_classes=1, base_n_filter=24)
     model = medzoo.ResidualUNet3D(in_channels=1, out_channels=1)
-    # model = medzoo.AttentionUNet(n_classes=1, in_channels=1)
     checkpoint = torch.load(model_path)
     model.load_state_dict(checkpoint['model_state_dict'])
 
@@ -46,8 +45,8 @@ def predictor(PATH, data_loader, model_path, csv_name, save_folder):
             input_tensor, label = input_tuple
             # print(f'input tuple len = {len(input_tuple)}, input tuple = {input_tuple}')
             # print(f'label type = {type(label)}, label = {label.nonzero()}')
-            # input_tensor, label = input_tensor.cuda(), label.cuda()
-            input_tensor, label = input_tensor.cpu(), label.cpu()
+            input_tensor, label = input_tensor.cuda(), label.cuda()
+            # input_tensor, label = input_tensor.cpu(), label.cpu()
             input_tensor.requires_grad = False
 
             pred = model(input_tensor)
@@ -64,83 +63,37 @@ def predictor(PATH, data_loader, model_path, csv_name, save_folder):
             print(f'pred shape = {np.shape(pred_arr)}, label shape = {np.shape(label_arr)}')
             pred_arr = np.where(pred_arr > 0, 1, 0)
 
-            thyroid_matrix = ConfusionMatrix(pred=pred_arr[:, :, :], label=label_arr[:, :, :])
-
-            tp, fp, tn, fn = thyroid_matrix.get_matrix()
-            print(f'Primary: tp = {tp}, fp = {fp}, tn = {tn}, fn = {fn}')
-
-            recall = analysis.eval_metrics.recall(confusion_matrix=thyroid_matrix)
-            print(f'recall = {recall:.4f}')
-
-            precision = analysis.eval_metrics.precision(confusion_matrix=thyroid_matrix)
-            print(f'precision p = {precision:.4f}')
-
-            fscore = analysis.eval_metrics.f1_score(confusion_matrix=thyroid_matrix)
-            print(f'f1 score p = {fscore:.4f}')
-
-            hausdorff_distance = analysis.eval_metrics.hausdorff_distance(confusion_matrix=thyroid_matrix)
-            print(f'hausdorff_distance p = {hausdorff_distance:.4f}')
-
-            hausdorff_distance_95 = analysis.eval_metrics.hausdorff_distance_95(confusion_matrix=thyroid_matrix)
-            print(f'hausdorff_distance 95 p = {hausdorff_distance_95:.4f}')
-            eval_metrics = {}
-            eval_metrics.update({'dice_p': dice_score,
-                                 'recall': recall,
-                                 'precision': precision,
-                                 'fscore': fscore,
-                                 'hausdorff_distance': hausdorff_distance,
-                                 'hausdorff_distance_95': hausdorff_distance_95})
-            eval_list.append(eval_metrics)
-
-
             # pred = pred.squeeze()
             # pred_arr = pred.cpu().numpy()
             # print(f'pred_arr type = {type(pred_arr)}, pred_arr size = {np.shape(pred_arr)}')
             print(f'pred_arr min = {np.min(pred_arr)}, pred_arr max = {np.max(pred_arr)}')
 
-            file_name = f'1026_2157_{batch_idx}.nii.gz'
+            file_name = f'3DUNET_{batch_idx}.nii.gz'
 
             # print(f'output_img type = {type(output_img)}, output_img size = {output_img.size()}')
             os.chdir(path_list[batch_idx])
             pred_img = sitk.GetImageFromArray(pred_arr[:, :, :])
-            # sitk.WriteImage(pred_img[:, :, :], file_name)
+            sitk.WriteImage(pred_img[:, :, :], file_name)
             print(f'{file_name} saved in {os.getcwd()}')
             print(f'prediction done -------------------------------\n')
             # print(f'pred type = {pred.type()}, pred size = {pred.size()}')
         # break
     print(f'Evaluation dataframe: ')
-    eval_df = pd.DataFrame(eval_list, columns=['dice_p', 'recall', 'precision', 'fscore',
-                                            'hausdorff_distance', 'hausdorff_distance_95'])
-    # Add row of Mean value of each metrics
-    eval_df.loc['Mean'] = eval_df.mean()
-    eval_df.loc['Median'] = eval_df.median()
-    eval_df.loc['Std'] = eval_df.std()
-    print(eval_df)
-    print(eval_df.loc['Mean'])
-    # os.chdir(PATH + save_folder)
-    eval_df.to_csv(PATH + save_folder + csv_name, mode='w')
-    print(f'Evaluation csv saved in {os.getcwd()}')
-    print('End of validation')
+
 
 
 _, _, pred_loader = dataloaders.thyroid_dataloader.generate_thyroid_dataset()
-# RESUNET
 PATH = 'E:/HSE/Medical_Segmentation/saved_models/RESUNETOGT_checkpoints/'
-model_path = 'RESUNETOGT_1030_1616_thyroid/RESUNETOGT_1030_1616_thyroid_last_epoch.pth'
+model_path = 'RESUNETOGT_1023_1235_thyroid/RESUNETOGT_1023_1235_thyroid_BEST.pth'
 # save_folder = 'RESUNETOG_18_41___10_16_thyroid_/'
-save_folder = 'RESUNETOGT_1030_1616_thyroid/'
+save_folder = 'RESUNETOGT_1023_1235_thyroid/'
 
 # 3DUNET
 # PATH = 'E:/HSE/Medical_Segmentation/saved_models/UNET3D_checkpoints/'
 # model_path = 'UNET3D_02_43___07_14_thyroid_/UNET3D_02_43___07_14_thyroid__last_epoch.pth'
 # save_folder = 'UNET3D_02_43___07_14_thyroid_/'
 
-# ATTENTIONUNET
-# PATH = 'E:/HSE/Medical_Segmentation/saved_models/ATTENTIONUNET_checkpoints/'
-# model_path = 'ATTENTIONUNET_10_35___07_15_thyroid_/ATTENTIONUNET_10_35___07_15_thyroid__BEST.pth'
-# save_folder = 'ATTENTIONUNET_10_35___07_15_thyroid_/'
-
-csv_name = 'prediction_LAST_0902.csv'
+csv_name = 'prediction_BEST_0902.csv'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__BEST.pth'
 # model_path = PATH + 'UNET3D_29_06___17_24_thyroid_/UNET3D_29_06___17_24_thyroid__last_epoch.pth'
 

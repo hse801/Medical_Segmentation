@@ -21,21 +21,28 @@ def resave_file(file_path, save_path):
     src_img = sitk.ReadImage(file_path)
     # print(f'ct path for training = {img_ct_path}')
     src_arr = sitk.GetArrayFromImage(src_img)
+    src_arr = np.where(src_arr > 0, 1, 0)
     src_img = sitk.GetImageFromArray(src_arr)
     os.chdir(save_path)
-    sitk.WriteImage(src_img[:, :, :], file_name)
+    sitk.WriteImage(src_img[:, :, :], 'crop_mask_compare.nii.gz')
     print(f'{file_name} saved in {os.getcwd()}')
 
 
 for f in data_path:
-    # lymph_path = f + 'lymph_cut_sum.nii.gz'
-    ct_path = f + 'crop_ct.nii.gz'
-    if os.path.isfile(ct_path):
-        resave_file(file_path=ct_path, save_path=f)
+    # ct_path = f + 'crop_ct.nii.gz'
+    # if os.path.isfile(ct_path):
+    #     resave_file(file_path=ct_path, save_path=f)
+    # else:
+    #     print('No thyroid ct file!')
+
+    mask_path = f + 'crop_mask.nii.gz'
+    if os.path.isfile(mask_path):
+        resave_file(file_path=mask_path, save_path=f)
     else:
-        print('No thyroid ct file!')
+        print('No thyroid mask file!')
+
     # if os.path.isfile(roi_path):
     #     resave_file(file_path=roi_path, save_path=f)
     # else:
     #     print('No primary file!')
-    break
+    # break

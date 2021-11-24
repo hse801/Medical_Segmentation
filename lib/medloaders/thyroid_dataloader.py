@@ -43,7 +43,7 @@ class Thyroid_dataset(Dataset):
         img_mask_path = self.mask_path[idx]
         img_mask = sitk.ReadImage(img_mask_path)
         img_mask_data = sitk.GetArrayFromImage(img_mask)
-        img_mask_data[img_mask_data > 0] = 1
+        # img_mask_data[img_mask_data > 0] = 1
         mask_file_name = img_mask_path.split("\\")[2]
         # print(f'ct path for training = {img_ct_path}\n img_mask_path = {img_mask_path}')
         # print(f'mask_file_name = {mask_file_name}')
@@ -70,28 +70,24 @@ class Thyroid_dataset(Dataset):
         mask_res = img_mask_data - mask_copy
 
         # print(f'mask path for training = {img_mask_path}')
-
         # img_mask_data[img_mask_data == 5120] = 1 # for 2 labels
         # img_mask_data[img_mask_data > 5120] = 2
-
+        # print(f'max = {np.max(img_mask_data)}')
         # for 2 channel output
         # img_left_path = self.left_path[idx]
         # img_gt = sitk.ReadImage(img_left_path)
         # img_left_data = sitk.GetArrayFromImage(img_gt)
-        #
         # img_right_path = self.right_path[idx]
         # img_right = sitk.ReadImage(img_right_path)
         # img_right_data = sitk.GetArrayFromImage(img_right)
-        #
         # mask_combined = np.stack((img_left_data, img_right_data), axis=0)
 
+        mask_left = np.where(img_mask_data == 5120, 1, 0)
+        mask_right = np.where(img_mask_data == 7168, 1, 0)
+        # print(f'mask_left shape = {np.shape(mask_left)}, mask_right shape = {np.shape(mask_right)}')
+        mask_combined = np.stack((mask_left, mask_right), axis=0)
 
-        # mask_left = np.where(img_mask_data == 5120, 1, 0)
-        # mask_right = np.where(img_mask_data == 7168, 1, 0)
-        # # print(f'mask_left shape = {np.shape(mask_left)}, mask_right shape = {np.shape(mask_right)}')
-        # mask_combined = np.stack((mask_left, mask_right), axis=0)
         # print(f'mask_combined.size = {np.shape(mask_combined)}')
-
         # print(f'mask max = {np.max(img_mask_data)}')
         # img_mask_data = img_mask_data / img_mask_data.max()
         # print(f'torch.FloatTensor(img_ct_data.copy()).unsqueeze(0) size = {torch.FloatTensor(img_ct_data.copy()).unsqueeze(0).size()}')
@@ -113,8 +109,8 @@ class Thyroid_dataset(Dataset):
                     img_ct_data = img_ct_data[:, :, ::-1]
                     img_mask_data = img_mask_data[:, :, ::-1]
 
-            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
-
+            # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
+            return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
         # else:
         #     img_ct_path = self.ct_path[idx]
         #     img_ct = sitk.ReadImage(img_ct_path)
@@ -180,14 +176,16 @@ class Thyroid_dataset(Dataset):
         # return img_ct_data, img_mask_data
 
         # if self.augmentation:
+
         self.transform = augment3D.RandomChoice(
             transforms=[augment3D.GaussianNoise(mean=0, std=0.01), augment3D.RandomRotation(),
                         augment3D.RandomShift(), augment3D.RandomZoom()
                         ], p=0.9)
 
-        [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
+        # [img_ct_data], img_mask_data = self.transform([img_ct_data], img_mask_data)
+
         # print('data transformed')
-        # [img_ct_data], mask_combined = self.transform([img_ct_data], mask_combined)
+        [img_ct_data], mask_combined = self.transform([img_ct_data], mask_combined)
         # print(f'af ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # img_ct_data, mask_combined = self.transform(img_ct_data, mask_combined)
 
@@ -202,8 +200,8 @@ class Thyroid_dataset(Dataset):
         #     return img_ct_data.copy(), ct_res.copy(), img_mask_data.copy(), mask_res.copy()
         # print(f'ct shape = {img_ct_data.shape}, mask shape = {img_mask_data.shape}')
         # if
-        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
-        # return torch.FloatTensor(img_ct_data.copy()), torch.FloatTensor(img_mask_data.copy())
+        return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(mask_combined.copy())
+        # return torch.FloatTensor(img_ct_data.copy()).unsqueeze(0), torch.FloatTensor(img_mask_data.copy()).unsqueeze(0)
 
     def __len__(self):
         return len(self.ct_path)
