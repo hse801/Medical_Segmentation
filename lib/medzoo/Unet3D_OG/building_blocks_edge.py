@@ -7,6 +7,9 @@ from kornia.filters.kernels import get_spatial_gradient_kernel2d, get_spatial_gr
 import numpy as np
 import scipy.ndimage as ndimage
 import kornia
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 
 
 def conv3d(in_channels, out_channels, kernel_size, bias, padding):
@@ -388,7 +391,6 @@ class ExtResNetBlock(nn.Module):
         self.get_edge = get_edge
         self.edge_conv = nn.Conv3d(out_channels, out_channels, kernel_size=(1, 1, 1), stride=(1, 1, 1), padding=(0, 0, 0))
 
-
     def _spatialGradient_3d(self, image):
         """ Implementation of a sobel 3d spatial gradient inspired by the kornia library.
 
@@ -453,6 +455,7 @@ class ExtResNetBlock(nn.Module):
             sobel_slice = kornia.sobel(x_slice)
             edge[:, :, d, :, :] = sobel_slice
             # edge[b, c, :, :, :] = (edge[b, c, :, :, :] - np.min(edge[b, c, :, :, :])) / (np.max(edge[b, c, :, :, :]) - np.min(edge[b, c, :, :, :]))
+        # plt.show()
         return edge
 
     def forward(self, x):
@@ -464,6 +467,17 @@ class ExtResNetBlock(nn.Module):
             # print(f'out size = {out.size()}')
             edge = torch.sigmoid(out)
             edge = self._sobel_torch(edge)
+            # print(f'edge size = {edge.size()}')
+            # edge size = torch.Size([1, 64, 64, 64, 64])
+
+            edge = edge.detach().cpu().numpy()
+            fig = plt.figure(figsize=(64, 64))
+            # fig.subplots_adjust(left=0, right=1, top=0.8)
+            for i in range(64):
+                fig.add_subplot(4, 4, i + 1, xticks=[], yticks=[])
+                plt.imshow(edge[0, 40, i + 20, :, :], cmap='jet')
+            plt.savefig('E:/HSE/Medical_Segmentation/figures/feature_map.jpg', bbox_inches='tight')
+
             # edge = kornia.filters.spatial_gradient3d(edge)
             # edge = self._spatialGradient_3d(edge)
             # print(f'edge size = {edge.size()}')
