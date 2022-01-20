@@ -15,8 +15,8 @@ import pandas as pd
 def dcm_header(file_path):
     dose_info = pydicom.dcmread(file_path[0])
 
-    sensitivity = dose_info[0x0033, 0x1170][1][0x0033, 0x101f][0]
-    # print(f'sensitivity = {sensitivity}')
+    sensitivity = dose_info[0x0033,0x1170][0][0x0033,0x101e][732]
+    print(f'sensitivity = {sensitivity}')
 
     ScanM = int(dose_info[0x0008, 0x0022][4:6])  # Month
     ScanD = int(dose_info[0x0008, 0x0022][6:8])  # Date
@@ -52,7 +52,7 @@ def dcm_header(file_path):
 
     PreAct_DC = PreAct * np.exp(math.log(2) * (pre_time - inj_time) / halfT)
     PostAct_DC = PostAct * np.exp(math.log(2) * (post_time - inj_time) / halfT)
-    inj_dose = PreAct_DC - PostAct_DC  # uCi unit
+    inj_dose = 1000 * (PreAct_DC - PostAct_DC)  # uCi unit
     decay_factor = np.exp(math.log(2) * (Scan_time - inj_time) / halfT)
     print(f'Scan_time = {Scan_time},pre_time = {pre_time},inj_time = {inj_time},post_time = {post_time}')
     print(f'PreAct_DC = {PreAct_DC}, PostAct_DC = {PostAct_DC}, inj_dose = {inj_dose}, decay_factor = {decay_factor}')
@@ -203,6 +203,7 @@ def resample_nb(src_file, dst_file, save_dir):
     :return:
     """
     file_name = src_file[0].split('\\')[-1].split('.')[0] + '_rsmpl.nii.gz'
+    # file_name = 'crop_mask.nii.gz'
 
     src_img = nb.load(src_file[0])
     src_img_data = src_img.get_fdata()
@@ -220,21 +221,28 @@ def resample_nb(src_file, dst_file, save_dir):
 
 
 path_list = glob.glob('D:/0902_Thyroid/ThyroidSPECT Dataset/*/Tc Thyroid SPECT/')
+# path_list = glob.glob('D:/0902_Thyroid/29085932/Tc Thyroid SPECT/')
 
 id_list = []
 
 for p in path_list:
     spect_dcm_file = glob.glob(p + 'Q.Metrix_Transaxials_IsotropNM/IM*.DCM')
     mask_dcm_file = glob.glob(p + 'Q.Metrix Organs/IM*.DCM')
+
     mask_nii_file = glob.glob(p + 'crop_mask.nii.gz')
     spect_nii_file = glob.glob(p + 'crop_spect.nii.gz')
-    proposed_file = glob.glob(p + 'Proposed*.nii.gz')
-    unet_file = glob.glob(p + '3DUNET*.nii.gz')
-    attention_file = glob.glob(p + 'ATTENTION*.nii.gz')
-    rsmpl_proposed = glob.glob(p + 'Proposed*rsmpl.nii.gz')
+
+    unet_file = glob.glob(p + '3DUNET*rsmpl.nii.gz')
+    attention_file = glob.glob(p + 'ATTENTION*rsmpl.nii.gz')
+    proposed_file = glob.glob(p + 'Proposed*rsmpl.nii.gz')
+
+    # unet_file = glob.glob(p + '3DUNET_0.nii.gz')
+    # attention_file = glob.glob(p + 'ATTENTION*_0.nii.gz')
+    # rsmpl_proposed = glob.glob(p + 'Proposed_0.nii.gz')
 
     # Resample the proposed prediction file as mask file for quantification
-    # resample_nb(src_file=attention_file, dst_file=mask_nii_file, save_dir = p)
+    # resample_nb(src_file=rsmpl_proposed, dst_file=mask_nii_file, save_dir = p)
+    # break
 
     # to check the affine after resampling
     # compare_affine(src_file=rsmpl_proposed, dst_file=mask_nii_file)
@@ -242,6 +250,8 @@ for p in path_list:
 
     # To read tag of the dicom file to get the necessary information from spect file
     # dcm_header(file_path=mask_dcm_file)
+    print(f'spect_dcm_file = {spect_dcm_file}, mask_dcm_file = {mask_dcm_file}, mask_nii_file = {mask_nii_file}, spect_nii_file = {spect_nii_file}')
+    print(f'unet_file = {unet_file}, attention_file = {attention_file}, proposed_file = {proposed_file}')
     sensitivity, decay_factor, inj_dose = dcm_header(file_path=mask_dcm_file)
 
     # calculate spect count of the mask region
@@ -252,10 +262,11 @@ for p in path_list:
     proposed_sum = get_img(spect_path=spect_nii_file, mask_path=proposed_file)
 
     # region_activity = region_sum * decay_factor / sensitivity / (60 * 20)
-    mask_percent_id = mask_sum * decay_factor / sensitivity / (60 * 20) / inj_dose * 100
-    unet_percent_id = unet_sum * decay_factor / sensitivity / (60 * 20) / inj_dose * 100
-    attention_percent_id = attention_sum * decay_factor / sensitivity / (60 * 20) / inj_dose * 100
-    proposed_percent_id = proposed_sum * decay_factor / sensitivity / (60 * 20) / inj_dose * 100
+    # divide by 2 : duration time 2 minutes because of two gamma camera
+    mask_percent_id = mask_sum * decay_factor / sensitivity / inj_dose * 100 / 2
+    unet_percent_id = unet_sum * decay_factor / sensitivity / inj_dose * 100 / 2
+    attention_percent_id = attention_sum * decay_factor / sensitivity / inj_dose * 100 / 2
+    proposed_percent_id = proposed_sum * decay_factor / sensitivity / inj_dose * 100 / 2
 
     print(f'mask_percent_id = {mask_percent_id}, mask_sum = {mask_sum}')
     print(f'unet_percent_id = {unet_percent_id}, unet_sum = {unet_sum}')
@@ -280,7 +291,7 @@ eval_df.loc['Std'] = eval_df.std()
 print(eval_df)
 print(eval_df.loc['Mean'])
 # os.chdir(PATH + save_folder)
-eval_df.to_csv('%ID_analysis.csv', mode='w')
+eval_df.to_csv('%ID_analysis_0120.csv', mode='w')
 print(f'ID_analysis csv saved in {os.getcwd()}')
     # resample_volume(src_file=proposed_file, dst_file=mask_nii_file, save_dir = p)
     # break
